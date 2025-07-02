@@ -8,6 +8,9 @@ typedef Event DataType; // PQueue uses Event as its DataType
 
 #include "apqueue.h" // Assumed to contain PQueue structure and InitPQueue, PQInsert, PQDelete, PQEmpty
 
+#define COMMONLENGTH 10
+int VIP_WINDOWS = 0;
+
 // Define a Node structure for the linked list
 struct Node
 {
@@ -42,7 +45,7 @@ struct simulation
   TellerStats tstat[11];
   PQueue pq;        // Main event priority queue
   PQueue vipPQueue; // NEW: Global priority queue for high-priority VIPs
-  isVip ivs[10];    // Predefined VIP statuses
+  isVip ivs[COMMONLENGTH];    // Predefined VIP statuses
   int ivsIndex;
 };
 typedef struct simulation Simulation;
@@ -77,7 +80,7 @@ void InitSimulation(Simulation *s)
   Event *firstevent = (Event *)malloc(sizeof(Event)); // Allocate memory for the first event
 
   // Initialize teller statistics and their queues
-  for (i = 1; i <= 10; i++)
+  for (i = 1; i <= COMMONLENGTH; i++)
   {
     s->tstat[i].finishService = 0;
     s->tstat[i].totalService = 0;
@@ -92,8 +95,8 @@ void InitSimulation(Simulation *s)
   s->ivsIndex = 0;     // Index for predefined VIP statuses
 
   // Predefined VIP statuses for initial customers
-  isVip temp[10] = {Vip, notVip, Vip, Vip, Vip, notVip, Vip, notVip, notVip, Vip}; // Updated VIP sequence
-  for (i = 0; i < 10; i++)
+  isVip temp[COMMONLENGTH] = {Vip, notVip, Vip, Vip, Vip, notVip, Vip, notVip, notVip, Vip}; // Updated VIP sequence
+  for (i = 0; i < COMMONLENGTH; i++)
   {
     s->ivs[i] = temp[i];
   }
@@ -149,10 +152,10 @@ int NextAvailableTeller(Simulation *s, isVip iv, int currentTime)
     }
 
     // Try to find busy regular tellers that a VIP could join (randomly)
-    int busyRegularTellers[10]; // To store IDs of busy regular tellers (tellers 2 to numTellers)
+    int busyRegularTellers[COMMONLENGTH]; // To store IDs of busy regular tellers (tellers 2 to numTellers)
     int numBusyRegularTellers = 0;
 
-    for (int i = 2; i <= s->numTellers; i++)
+    for (int i = VIP_WINDOWS + 1; i <= s->numTellers; i++)
     {
       // A teller is considered "non-empty" if it's currently serving or has a queue.
       // Since we already checked for idle tellers, any remaining teller is "non-empty".
@@ -174,13 +177,16 @@ int NextAvailableTeller(Simulation *s, isVip iv, int currentTime)
       // it means all tellers are either idle (already picked), or just Teller 1 exists and it's busy.
       // If numTellers is 1, it must be Teller 1.
       // This part ensures a VIP always gets assigned, even to a busy Teller 1.
-      return 1;
+      if (VIP_WINDOWS)
+        return rand() % VIP_WINDOWS + 1; // Default to Teller 1 if it exists
+      else
+        return -1; // No tellers available, should not happen in a valid simulation
     }
   }
   else // notVip (Ordinary Customer)
   {
     // 1. Look for any completely idle REGULAR teller (exclude Teller #1)
-    for (int i = 2; i <= s->numTellers; i++)
+    for (int i = VIP_WINDOWS + 1; i <= s->numTellers; i++)
     {
       if (s->tstat[i].finishService <= currentTime && IsTellerQueueEmpty(&s->tstat[i]))
       {
@@ -194,7 +200,7 @@ int NextAvailableTeller(Simulation *s, isVip iv, int currentTime)
     minQueueCount = 999999;
     minFinishTime = 999999;
 
-    for (int i = 2; i <= s->numTellers; i++)
+    for (int i = VIP_WINDOWS + 1; i <= s->numTellers; i++)
     {
       if (s->tstat[i].queueCount < minQueueCount)
       {
@@ -262,7 +268,7 @@ void RunSimulation(Simulation *s)
 
       // Schedule the next arrival if within simulation limits and predefined VIP list limits
       nexttime = GetTime(e) + NextArrivalTime(s);
-      if (nexttime <= s->simulationLength && s->ivsIndex < 10)
+      if (nexttime <= s->simulationLength && s->ivsIndex < COMMONLENGTH)
       {
         s->nextCustomer++;
         InitEvent(newevent, nexttime, arrival, s->nextCustomer, 0, 0, 0, s->ivs[s->ivsIndex++]);
