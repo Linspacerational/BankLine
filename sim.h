@@ -195,7 +195,7 @@ int NextAvailableTeller(Simulation *s, isVip iv, int currentTime)
       // If numTellers is 1, it must be Teller 1.
       // This part ensures a VIP always gets assigned, even to a busy Teller 1.
       if (VIP_WINDOWS)
-        return rand() % VIP_WINDOWS + 1; // Default to Teller 1 if it exists
+        return rand() % VIP_WINDOWS + 1;
       else
         return -1; // No tellers available, should not happen in a valid simulation
     }
@@ -238,14 +238,8 @@ int NextAvailableTeller(Simulation *s, isVip iv, int currentTime)
     // Fallback: If no regular tellers were found (e.g., only Teller 1 exists, or numTellers is too small for >=2)
     if (bestTellerID == -1)
     {
-      // This case implies that numTellers might be 1, or something is wrong.
-      // If the system is set up for non-VIPs to *only* go to regular tellers,
-      // this might mean the customer cannot be served.
-      // Assuming numTellers >= 2 for non-VIPs to have regular tellers.
-      if (s->numTellers >= 2)
-        return 2; // Default to teller 2 if it exists
-      else
-        return 1; // If only one teller, it must be teller 1
+      printf("No regular tellers available, defaulting to Teller 1.\n");
+      return 1;
     }
     return bestTellerID;
   }
