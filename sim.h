@@ -9,7 +9,7 @@ typedef Event DataType; // PQueue uses Event as its DataType
 #include "apqueue.h" // Assumed to contain PQueue structure and InitPQueue, PQInsert, PQDelete, PQEmpty
 
 #define COMMONLENGTH 10
-int VIP_WINDOWS = 0;
+int VIP_WINDOWS = 1;
 
 // Define a Node structure for the linked list
 struct Node
