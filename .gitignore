@@ -3,3 +3,5 @@
 a.exe
 log/*
 .gitignore
+compare.py
+score_compare.png
