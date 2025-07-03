@@ -240,12 +240,8 @@ int NextAvailableTeller(Simulation *s, isVip iv, int currentTime)
     // Fallback: If no regular tellers were found (e.g., numTellers is 1 or less than VIP_WINDOWS+1)
     if (bestTellerID == -1)
     {
-      // If there are no dedicated regular tellers (e.g., only 1 teller, which is VIP_WINDOWS),
-      // ordinary customers *must* go to the only available teller.
-      if (s->numTellers >= 1)
-        return 1; // Fallback to teller 1 if no other options
-      else
-        return -1; // Should not happen in a valid simulation
+      printf("No regular tellers available, defaulting to Teller 1.\n");
+      return 1;
     }
     return bestTellerID;
   }
