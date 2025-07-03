@@ -168,44 +168,43 @@ for num_tellers, results_by_scenario in all_results.items():
         else:
             print(f"  {scenario_name}: {avg_score}")
 
-print("\n--- 评估完成 ---")
-# --- Visualization ---
-import matplotlib.pyplot as plt
-import matplotlib.font_manager as fm
-# 设置中文字体，避免中文乱码
-font_path = 'C:/Windows/Fonts/simhei.ttf'  # Windows系统的黑体路径
-font_prop = fm.FontProperties(fname=font_path)
-# 设置全局字体属性
-plt.rcParams['font.family'] = font_prop.get_name()
+print("\n--- 最终结果：各出纳员数量下不同利好机制的得分百分比 (折算后) ---")
+# 用于存储最终百分比结果的Python数组
+normalized_scores_output = []
 
-print("\n--- 生成可视化折线图 ---")
+for num_tellers in sorted(all_results.keys()): # 确保按出纳员数量排序
+    scenario_scores = all_results[num_tellers]
+    
+    # 提取当前出纳员数量下的三个分数
+    score_bank = scenario_scores.get("利好银行")
+    score_vip = scenario_scores.get("利好VIP客户")
+    score_cust = scenario_scores.get("利好普通客户")
 
-# 准备绘图数据
-plot_data = {
-    scenario_name: [] for scenario_name in scenarios.keys()
-}
-teller_counts = sorted(all_results.keys()) # 确保出纳员数量是排序的
-
-for num_tellers in teller_counts:
-    for scenario_name, avg_score in all_results[num_tellers].items():
-        if isinstance(avg_score, float):
-            plot_data[scenario_name].append(avg_score)
+    # 检查所有分数是否有效（浮点数），避免“无有效数据”参与计算
+    if isinstance(score_bank, float) and isinstance(score_vip, float) and isinstance(score_cust, float):
+        total_sum = score_bank + score_vip + score_cust
+        
+        if total_sum > 0: # 避免除以零
+            pct_bank = (score_bank / total_sum) * 100
+            pct_vip = (score_vip / total_sum) * 100
+            pct_cust = (score_cust / total_sum) * 100
+            
+            # 将结果添加到数组中
+            normalized_scores_output.append([num_tellers, round(pct_bank, 2), round(pct_vip, 2), round(pct_cust, 2)])
         else:
-            # 如果某个场景没有有效数据，填充NaN，这样在图中会显示为断线
-            plot_data[scenario_name].append(np.nan) 
+            # 如果总和为0，表示所有分数都为0，百分比也为0
+            normalized_scores_output.append([num_tellers, 0.0, 0.0, 0.0])
+    else:
+        # 如果有任何一个分数是无效的，则该行数据设为None或者特定的标记
+        normalized_scores_output.append([num_tellers, "N/A", "N/A", "N/A"])
+        print(f"Warning: 出纳员数量 {num_tellers} 的部分数据无效，无法计算百分比。")
 
-plt.figure(figsize=(12, 7)) # 设置图表大小
+writer = open("log/forbank/normalized_scores.txt", "w", encoding="utf-8")
+for row in normalized_scores_output:
+    for i in row:
+        writer.write(f"{i}\t")
+    writer.write("\n")
+writer.close()
+print("已将百分比结果写入 log/forbank/normalized_scores.txt")
 
-for scenario_name, scores in plot_data.items():
-    plt.plot(teller_counts, scores, marker='o', label=scenario_name)
-
-plt.title('不同出纳员数量下各评估机制的平均得分')
-plt.xlabel('出纳员数量')
-plt.ylabel('平均得分')
-plt.xticks(teller_counts) # 确保X轴刻度与出纳员数量对应
-plt.grid(True, linestyle='--', alpha=0.7)
-plt.legend() # 显示图例，区分不同利好场景
-plt.tight_layout() # 调整布局，避免标签重叠
-plt.show() # 显示图表
-
-print("--- 可视化完成 ---")
+print("\n--- 评估完成 ---")
