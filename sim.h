@@ -8,8 +8,10 @@ typedef Event DataType; // PQueue uses Event as its DataType
 
 #include "apqueue.h" // Assumed to contain PQueue structure and InitPQueue, PQInsert, PQDelete, PQEmpty
 
-#define COMMONLENGTH 10
-int VIP_WINDOWS = 0;
+#define MAXCUSTLENGTH 1000
+#define MAXTELLERLENGTH 11
+
+int VIP_WINDOWS = 1;
 
 // Define a Node structure for the linked list
 struct Node
@@ -42,11 +44,18 @@ struct simulation
   int arrivalLow, arrivalHigh;
   int serviceLow, serviceHigh;
   int waitHigh; // Max waiting time a VIP can tolerate
-  TellerStats tstat[11];
+  TellerStats tstat[MAXTELLERLENGTH];
   PQueue pq;        // Main event priority queue
   PQueue vipPQueue; // NEW: Global priority queue for high-priority VIPs
-  isVip ivs[COMMONLENGTH];    // Predefined VIP statuses
+  isVip ivs[MAXCUSTLENGTH];    // Predefined VIP statuses
   int ivsIndex;
+
+  // 衡量机制性能的指标
+  int totalCutInTime; // 记录插队次数
+  int totalVipWaitTime; // 记录所有VIP客户的总等待时间
+  int totalTellerIdleTime; // 记录所有出纳员的总空闲时间
+  int totalVipCustomerCount;      // NEW: 记录总VIP客户数量
+  int totalOrdinaryCustomerCount; // NEW: 记录总普通客户数量
 };
 typedef struct simulation Simulation;
 
@@ -58,6 +67,7 @@ void InitSimulation(Simulation *s);
 void RunSimulation(Simulation *s);
 void PrintSimulationResults(Simulation *s);
 isVip GenerateRandomVipStatus(void);
+int GetServiceTimeByCustomerID(TellerStats *ts, int customerID); // NEW: Get service time by customer ID
 
 // Helper functions for the new teller queue (linked list)
 void EnqueueCustomer(TellerStats *ts, Event customerEvent);
@@ -80,7 +90,7 @@ void InitSimulation(Simulation *s)
   Event *firstevent = (Event *)malloc(sizeof(Event)); // Allocate memory for the first event
 
   // Initialize teller statistics and their queues
-  for (i = 1; i <= COMMONLENGTH; i++)
+  for (i = 1; i <= MAXTELLERLENGTH; i++)
   {
     s->tstat[i].finishService = 0;
     s->tstat[i].totalService = 0;
@@ -94,11 +104,18 @@ void InitSimulation(Simulation *s)
   s->nextCustomer = 1; // First customer ID
   s->ivsIndex = 0;     // Index for predefined VIP statuses
 
+  s->totalCutInTime = 0;      
+  s->totalVipWaitTime = 0;    
+  s->totalTellerIdleTime = 0; 
+
+  s->totalVipCustomerCount = 0;      
+  s->totalOrdinaryCustomerCount = 0; 
+
   // Predefined VIP statuses for initial customers
-  isVip temp[COMMONLENGTH] = {Vip, notVip, Vip, Vip, Vip, notVip, Vip, notVip, notVip, Vip}; // Updated VIP sequence
-  for (i = 0; i < COMMONLENGTH; i++)
+  // isVip temp[COMMONLENGTH] = {Vip, notVip, Vip, Vip, Vip, notVip, Vip, notVip, notVip, Vip}; // Updated VIP sequence
+  for (i = 0; i < MAXCUSTLENGTH; i++)
   {
-    s->ivs[i] = temp[i];
+    s->ivs[i] = GenerateRandomVipStatus();
   }
 
   // Prompt user for simulation parameters
@@ -152,7 +169,7 @@ int NextAvailableTeller(Simulation *s, isVip iv, int currentTime)
     }
 
     // Try to find busy regular tellers that a VIP could join (randomly)
-    int busyRegularTellers[COMMONLENGTH]; // To store IDs of busy regular tellers (tellers 2 to numTellers)
+    int busyRegularTellers[MAXTELLERLENGTH]; // To store IDs of busy regular tellers (tellers 2 to numTellers)
     int numBusyRegularTellers = 0;
 
     for (int i = VIP_WINDOWS + 1; i <= s->numTellers; i++)
@@ -268,7 +285,7 @@ void RunSimulation(Simulation *s)
 
       // Schedule the next arrival if within simulation limits and predefined VIP list limits
       nexttime = GetTime(e) + NextArrivalTime(s);
-      if (nexttime <= s->simulationLength && s->ivsIndex < COMMONLENGTH)
+      if (nexttime <= s->simulationLength && s->ivsIndex < MAXCUSTLENGTH)
       {
         s->nextCustomer++;
         InitEvent(newevent, nexttime, arrival, s->nextCustomer, 0, 0, 0, s->ivs[s->ivsIndex++]);
@@ -309,9 +326,16 @@ void RunSimulation(Simulation *s)
       }
       else // Teller is busy or has a queue, customer needs to wait
       {
-        if (iv == Vip && tellerID != 1)
+        if (iv == Vip && tellerID > VIP_WINDOWS)
         { // VIP assigned to a regular teller
           InsertVipIntoQueue(&s->tstat[tellerID], *e);
+          Node *current = s->tstat[tellerID].customerQueueHead;
+          while (current != NULL)
+          {
+            if(GetCustomerType(&current->customerEvent) == notVip)
+              s->totalCutInTime += servicetime; // Increment cut-in time for non-VIPs
+            current = current->next;
+          }
           printf("\tVIP客户 %d 在出纳员 %d 排队 (插队). 队列头: %d, 队列尾: %d, 当前队列长度: %d\n",
                  GetCustomerID(e), tellerID,
                  (s->tstat[tellerID].customerQueueHead ? GetCustomerID(&s->tstat[tellerID].customerQueueHead->customerEvent) : 0),
@@ -332,6 +356,12 @@ void RunSimulation(Simulation *s)
     }
     else // GetEventType(e) == departure
     {
+      // NEW: 增加客户类型计数
+      if (GetCustomerType(e) == Vip)
+        s->totalVipCustomerCount++;
+      else
+        s->totalOrdinaryCustomerCount++;
+
       printf("时间: %2d\t%s客户 %d 离开\n", GetTime(e), (GetCustomerType(e) == Vip) ? "VIP" : "普通", GetCustomerID(e));
       printf("\t出纳员 %d\t等待时间 %d\t服务时间 %d\n", GetTellerID(e), GetWaitTime(e), GetServiceTime(e));
       tellerID = GetTellerID(e);
@@ -384,7 +414,35 @@ void RunSimulation(Simulation *s)
         int vipCustomerID_to_remove = GetCustomerID(&nextCustomerToServe);
 
         // Remove the VIP from their original teller's queue (Requirement 2: "可以更换柜台服务")
+        // 1. 计算原队列中在VIP后面的普通客户减少的等待时间
+        Node *orig = s->tstat[originalTellerID_of_vip].customerQueueHead;
+        int found_vip = 0;
+        int vip_service_time = 0;
+        while (orig != NULL)
+        {
+          if (!found_vip && GetCustomerID(&orig->customerEvent) == vipCustomerID_to_remove)
+          {
+            found_vip = 1;
+            vip_service_time = GetServiceTimeByCustomerID(&s->tstat[originalTellerID_of_vip], vipCustomerID_to_remove);
+          }
+          else if (found_vip && GetCustomerType(&orig->customerEvent) == notVip)
+          {
+            // 这些普通客户本来要等VIP的服务时间，现在不用等了
+            s->totalCutInTime -= vip_service_time;
+          }
+          orig = orig->next;
+        }
         RemoveCustomerByID(&s->tstat[originalTellerID_of_vip], vipCustomerID_to_remove);
+        // 2. 计算新队列（当前tellerID）所有普通客户因VIP插队增加的等待时间
+        Node *curr = s->tstat[tellerID].customerQueueHead;
+        while (curr != NULL)
+        {
+          if (GetCustomerType(&curr->customerEvent) == notVip)
+          {
+            s->totalCutInTime += vip_service_time;
+          }
+          curr = curr->next;
+        }
         printf("DEBUG: VIP客户 %d (来自出纳员 %d 的队列) 等待时间 %d 达到最长等待时间 %d，优先服务。\n", vipCustomerID_to_remove, originalTellerID_of_vip, GetWaitTime(&nextCustomerToServe), s->waitHigh);
 
         // Assign this VIP to be served by the current tellerID
@@ -481,6 +539,12 @@ void PrintSimulationResults(Simulation *s)
     cumWait += s->tstat[i].totalCustomerWait;
   }
 
+  // Calculate total teller idle time
+  for (i = 1; i <= s->numTellers; i++)
+  {
+    s->totalTellerIdleTime += (s->simulationLength - s->tstat[i].totalService);
+  }
+
   printf("\n");
   printf("******** 模拟结果总结 ********\n");
   printf("模拟时间：%d 分钟\n", s->simulationLength);
@@ -505,11 +569,21 @@ void PrintSimulationResults(Simulation *s)
     for (j = 0; j < s->tstat[i].timelineCount; j++)
     {
       Event *te = &s->tstat[i].timeline[j];
+      int iv = GetCustomerType(te);
+      int waitTime = GetWaitTime(te);
+      if (iv == Vip)
+      {
+        s->totalVipWaitTime += waitTime; // Accumulate total VIP wait time
+      }
       printf("\t\t时间 %2d：%s客户 %d，服务时间 %d，等待时间 %d\n",
-             GetTime(te), (GetCustomerType(te) == Vip) ? "VIP" : "普通",
-             GetCustomerID(te), GetServiceTime(te), GetWaitTime(te));
+             GetTime(te), (iv == Vip) ? "VIP" : "普通",
+             GetCustomerID(te), GetServiceTime(te), waitTime);
     }
   }
+  printf("\n");
+  printf("VIP客户平均等待时间：%f 分钟\n", (float) s->totalVipWaitTime / s->totalVipCustomerCount);
+  printf("出纳员平均空闲时间：%f 分钟\n", (float) s->totalTellerIdleTime / s->numTellers);
+  printf("普通用户被插队所平均多出的等待时间：%f 分钟\n", (float) s->totalCutInTime / s->totalOrdinaryCustomerCount);
 }
 
 // Helper functions for the new teller queue (linked list)
@@ -669,6 +743,21 @@ void RemoveCustomerByID(TellerStats *ts, int customerID)
   {
     ts->customerQueueTail = NULL;
   }
+}
+
+// 根据customerID查找其服务时间
+int GetServiceTimeByCustomerID(TellerStats *ts, int customerID)
+{
+  Node *curr = ts->customerQueueHead;
+  while (curr != NULL)
+  {
+    if (GetCustomerID(&curr->customerEvent) == customerID)
+    {
+      return GetServiceTime(&curr->customerEvent);
+    }
+    curr = curr->next;
+  }
+  return 0; // 未找到，返回0
 }
 
 #endif /* SIMULATION */
