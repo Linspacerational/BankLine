@@ -1,6 +1,6 @@
 .history/*
 实验一*.pdf
 compare.py
-log/
+log/*
 .gitignore
 score_compare.png

@@ -27,14 +27,14 @@ def run_simulation(sim_input):
         dict: A dictionary containing the captured metrics, or None if parsing fails.
     """
     try:
-        subprocess.run(['g++', 'a.cpp', '-o', 'a.exe'], check=True) # 编译新的 a.exe 文件
+        subprocess.run(['gcc', 'event.c', '-o', 'a.exe'], check=True) # 编译新的 a.exe 文件
         process = subprocess.run(
             ['./a.exe'],
             input=sim_input.encode('utf-8'), # input 仍然编码为 bytes
             capture_output=True,
             check=True
         )
-        subprocess.run(['rm', '-f', 'a.exe'], check=True) # 清理旧的 a.exe 文件
+        
         # 手动将字节输出解码为 GBK 字符串，并忽略无法解码的错误
         output = process.stdout.decode('gbk', errors='ignore') 
 
@@ -210,3 +210,4 @@ writer.close()
 print("已将百分比结果写入 log/forcust/normalized_scores.txt")
 
 print("\n--- 评估完成 ---")
+subprocess.run(['rm', '-f', 'a.exe'], check=True) # 清理旧的 a.exe 文件
