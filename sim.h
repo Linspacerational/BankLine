@@ -110,11 +110,11 @@ void InitSimulation(Simulation *s)
 
   s->totalVipCustomerCount = 0;
   s->totalOrdinaryCustomerCount = 0;
-
+  isVip temp[10] = {Vip, notVip, Vip, Vip, Vip, notVip, notVip, notVip, notVip, notVip};
   // 预定义初始客户的 VIP 状态
   for (i = 0; i < MAXCUSTLENGTH; i++)
   {
-    s->ivs[i] = GenerateRandomVipStatus();
+    s->ivs[i] = temp[i % 10];
   }
 
   // 提示用户输入模拟参数
