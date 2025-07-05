@@ -3,4 +3,4 @@
 score_compare.png
 compare.py
 .gitignore
-log/*
+/log/
