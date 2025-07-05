@@ -27,6 +27,7 @@ def run_simulation(sim_input):
         dict: A dictionary containing the captured metrics, or None if parsing fails.
     """
     try:
+        subprocess.run(['mkdir', 'log/forvip'], check=True)
         subprocess.run(['g++', 'a.cpp', '-o', 'a.exe'], check=True) # 编译新的 a.exe 文件
         process = subprocess.run(
             ['./a.exe'],
