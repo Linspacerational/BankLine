@@ -3,17 +3,17 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "event.h"      // å‡è®¾åŒ…å« Event ç»“æ„ä½“å’Œ InitEvent, GetTime, GetEventType, etc.
-typedef Event DataType; // PQueue ä½¿ç”¨ Event ä½œä¸ºå…¶ DataType
+#include "event.h"      // ¼ÙÉè°üº¬ Event ½á¹¹ÌåºÍ InitEvent, GetTime, GetEventType, etc.
+typedef Event DataType; // PQueue Ê¹ÓÃ Event ×÷ÎªÆä DataType
 
-#include "apqueue.h" // å‡è®¾åŒ…å« PQueue ç»“æ„ä½“å’Œ InitPQueue, PQDelete, PQEmpty
+#include "apqueue.h" // ¼ÙÉè°üº¬ PQueue ½á¹¹ÌåºÍ InitPQueue, PQDelete, PQEmpty
 
 #define MAXCUSTLENGTH 1000
 #define MAXTELLERLENGTH 11
 
-int VIP_WINDOWS = 1; // å‡è®¾ 1 å·å‡ºçº³å‘˜æ˜¯ VIP çª—å£
+int VIP_WINDOWS = 1; // ¼ÙÉè 1 ºÅ³öÄÉÔ±ÊÇ VIP ´°¿Ú
 
-// å®šä¹‰é“¾è¡¨èŠ‚ç‚¹ç»“æ„
+// ¶¨ÒåÁ´±í½Úµã½á¹¹
 struct Node
 {
   Event customerEvent;
@@ -27,12 +27,12 @@ struct tellerStats
   int totalCustomerCount;
   int totalCustomerWait;
   int totalService;
-  struct event timeline[MaxPQSize]; // å‡è®¾ MaxPQSize åœ¨ apqueue.h æˆ– event.h ä¸­å®šä¹‰
+  struct event timeline[MaxPQSize]; // ¼ÙÉè MaxPQSize ÔÚ apqueue.h »ò event.h ÖĞ¶¨Òå
   int timelineCount;
-  // æ–°å¢ï¼šç”¨äºå®¢æˆ·åœ¨æ­¤å‡ºçº³å‘˜å¤„ç­‰å¾…çš„é“¾è¡¨
+  // ĞÂÔö£ºÓÃÓÚ¿Í»§ÔÚ´Ë³öÄÉÔ±´¦µÈ´ıµÄÁ´±í
   Node *customerQueueHead;
   Node *customerQueueTail;
-  int queueCount; // æ–¹ä¾¿æ£€æŸ¥é˜Ÿåˆ—å¤§å°çš„è®¡æ•°
+  int queueCount; // ·½±ã¼ì²é¶ÓÁĞ´óĞ¡µÄ¼ÆÊı
 };
 typedef struct tellerStats TellerStats;
 
@@ -43,53 +43,53 @@ struct simulation
   int nextCustomer;
   int arrivalLow, arrivalHigh;
   int serviceLow, serviceHigh;
-  int waitHigh; // VIP å®¢æˆ·èƒ½å®¹å¿çš„æœ€é•¿ç­‰å¾…æ—¶é—´
+  int waitHigh; // VIP ¿Í»§ÄÜÈİÈÌµÄ×î³¤µÈ´ıÊ±¼ä
   TellerStats tstat[MAXTELLERLENGTH];
-  PQueue pq;                // ä¸»äº‹ä»¶ä¼˜å…ˆçº§é˜Ÿåˆ—
-  PQueue vipPQueue;         // æ–°å¢ï¼šç”¨äºé«˜ä¼˜å…ˆçº§ VIP çš„å…¨å±€ä¼˜å…ˆçº§é˜Ÿåˆ—
-  isVip ivs[MAXCUSTLENGTH]; // é¢„å®šä¹‰çš„ VIP çŠ¶æ€
+  PQueue pq;                // Ö÷ÊÂ¼şÓÅÏÈ¼¶¶ÓÁĞ
+  PQueue vipPQueue;         // ĞÂÔö£ºÓÃÓÚ¸ßÓÅÏÈ¼¶ VIP µÄÈ«¾ÖÓÅÏÈ¼¶¶ÓÁĞ
+  isVip ivs[MAXCUSTLENGTH]; // Ô¤¶¨ÒåµÄ VIP ×´Ì¬
   int ivsIndex;
 
-  // è¡¡é‡æœºåˆ¶æ€§èƒ½çš„æŒ‡æ ‡
-  int totalCutInTime;             // è®°å½•æ’é˜Ÿæ¬¡æ•°ï¼ˆè¢«ä¸­æ–­çš„æ—¶é—´ï¼‰
-  int totalVipWaitTime;           // è®°å½•æ‰€æœ‰ VIP å®¢æˆ·çš„æ€»ç­‰å¾…æ—¶é—´
-  int totalTellerIdleTime;        // è®°å½•æ‰€æœ‰å‡ºçº³å‘˜çš„æ€»ç©ºé—²æ—¶é—´
-  int totalVipCustomerCount;      // æ–°å¢ï¼šè®°å½•æ€» VIP å®¢æˆ·æ•°é‡
-  int totalOrdinaryCustomerCount; // æ–°å¢ï¼šè®°å½•æ€»æ™®é€šå®¢æˆ·æ•°é‡
+  // ºâÁ¿»úÖÆĞÔÄÜµÄÖ¸±ê
+  int totalCutInTime;             // ¼ÇÂ¼²å¶Ó´ÎÊı£¨±»ÖĞ¶ÏµÄÊ±¼ä£©
+  int totalVipWaitTime;           // ¼ÇÂ¼ËùÓĞ VIP ¿Í»§µÄ×ÜµÈ´ıÊ±¼ä
+  int totalTellerIdleTime;        // ¼ÇÂ¼ËùÓĞ³öÄÉÔ±µÄ×Ü¿ÕÏĞÊ±¼ä
+  int totalVipCustomerCount;      // ĞÂÔö£º¼ÇÂ¼×Ü VIP ¿Í»§ÊıÁ¿
+  int totalOrdinaryCustomerCount; // ĞÂÔö£º¼ÇÂ¼×ÜÆÕÍ¨¿Í»§ÊıÁ¿
 };
 typedef struct simulation Simulation;
 
-// å‡½æ•°åŸå‹
+// º¯ÊıÔ­ĞÍ
 int NextArrivalTime(Simulation *s);
 int Get_ServiceTime(Simulation *);
-int NextAvailableTeller(Simulation *s, isVip iv, int currentTime); // ä¿®æ”¹åçš„åŸå‹
+int NextAvailableTeller(Simulation *s, isVip iv, int currentTime); // ĞŞ¸ÄºóµÄÔ­ĞÍ
 void InitSimulation(Simulation *s);
 void RunSimulation(Simulation *s);
 void PrintSimulationResults(Simulation *s);
 isVip GenerateRandomVipStatus(void);
-int GetServiceTimeByCustomerID(TellerStats *ts, int customerID); // æ–°å¢ï¼šæ ¹æ®å®¢æˆ· ID è·å–æœåŠ¡æ—¶é—´
+int GetServiceTimeByCustomerID(TellerStats *ts, int customerID); // ĞÂÔö£º¸ù¾İ¿Í»§ ID »ñÈ¡·şÎñÊ±¼ä
 
-// æ–°å¢å‡ºçº³å‘˜é˜Ÿåˆ—ï¼ˆé“¾è¡¨ï¼‰çš„è¾…åŠ©å‡½æ•°
+// ĞÂÔö³öÄÉÔ±¶ÓÁĞ£¨Á´±í£©µÄ¸¨Öúº¯Êı
 void EnqueueCustomer(TellerStats *ts, Event customerEvent);
 Event DequeueCustomer(TellerStats *ts);
 Event PeekCustomer(TellerStats *ts);
 int IsTellerQueueEmpty(TellerStats *ts);
-void InsertVipIntoQueue(TellerStats *ts, Event vipEvent); // è¯¥å‡½æ•°ç°åœ¨ç”¨äºå°†å®¢æˆ·æ’å…¥é˜Ÿåˆ—å¤´éƒ¨
-void RemoveCustomerByID(TellerStats *ts, int customerID); // ç”¨äº VIP å®¢æˆ·æ¢é˜Ÿåˆ—
+void InsertVipIntoQueue(TellerStats *ts, Event vipEvent); // ¸Ãº¯ÊıÏÖÔÚÓÃÓÚ½«¿Í»§²åÈë¶ÓÁĞÍ·²¿
+void RemoveCustomerByID(TellerStats *ts, int customerID); // ÓÃÓÚ VIP ¿Í»§»»¶ÓÁĞ
 
-// ç”Ÿæˆéšæœº VIP çŠ¶æ€ï¼ˆäº”åˆ†ä¹‹ä¸€çš„å‡ ç‡æ˜¯ VIPï¼‰
+// Éú³ÉËæ»ú VIP ×´Ì¬£¨Îå·ÖÖ®Ò»µÄ¼¸ÂÊÊÇ VIP£©
 isVip GenerateRandomVipStatus(void)
 {
   return (rand() % 5 == 0) ? Vip : notVip;
 }
 
-// åˆå§‹åŒ–æ¨¡æ‹Ÿå‚æ•°å’Œæ•°æ®ç»“æ„
+// ³õÊ¼»¯Ä£Äâ²ÎÊıºÍÊı¾İ½á¹¹
 void InitSimulation(Simulation *s)
 {
   int i;
-  Event *firstevent = (Event *)malloc(sizeof(Event)); // ä¸ºç¬¬ä¸€ä¸ªäº‹ä»¶åˆ†é…å†…å­˜
+  Event *firstevent = (Event *)malloc(sizeof(Event)); // ÎªµÚÒ»¸öÊÂ¼ş·ÖÅäÄÚ´æ
 
-  // åˆå§‹åŒ–å‡ºçº³å‘˜ç»Ÿè®¡æ•°æ®åŠå…¶é˜Ÿåˆ—
+  // ³õÊ¼»¯³öÄÉÔ±Í³¼ÆÊı¾İ¼°Æä¶ÓÁĞ
   for (i = 1; i <= MAXTELLERLENGTH; i++)
   {
     s->tstat[i].finishService = 0;
@@ -97,12 +97,12 @@ void InitSimulation(Simulation *s)
     s->tstat[i].totalCustomerWait = 0;
     s->tstat[i].totalCustomerCount = 0;
     s->tstat[i].timelineCount = 0;
-    s->tstat[i].customerQueueHead = NULL; // åˆå§‹åŒ–é“¾è¡¨å¤´
-    s->tstat[i].customerQueueTail = NULL; // åˆå§‹åŒ–é“¾è¡¨å°¾
+    s->tstat[i].customerQueueHead = NULL; // ³õÊ¼»¯Á´±íÍ·
+    s->tstat[i].customerQueueTail = NULL; // ³õÊ¼»¯Á´±íÎ²
     s->tstat[i].queueCount = 0;
   }
-  s->nextCustomer = 1; // ç¬¬ä¸€ä¸ªå®¢æˆ· ID
-  s->ivsIndex = 0;     // é¢„å®šä¹‰ VIP çŠ¶æ€çš„ç´¢å¼•
+  s->nextCustomer = 1; // µÚÒ»¸ö¿Í»§ ID
+  s->ivsIndex = 0;     // Ô¤¶¨Òå VIP ×´Ì¬µÄË÷Òı
 
   s->totalCutInTime = 0;
   s->totalVipWaitTime = 0;
@@ -111,64 +111,64 @@ void InitSimulation(Simulation *s)
   s->totalVipCustomerCount = 0;
   s->totalOrdinaryCustomerCount = 0;
 
-  // é¢„å®šä¹‰åˆå§‹å®¢æˆ·çš„ VIP çŠ¶æ€
+  // Ô¤¶¨Òå³õÊ¼¿Í»§µÄ VIP ×´Ì¬
   for (i = 0; i < MAXCUSTLENGTH; i++)
   {
     s->ivs[i] = GenerateRandomVipStatus();
   }
 
-  // æç¤ºç”¨æˆ·è¾“å…¥æ¨¡æ‹Ÿå‚æ•°
-  printf("è¾“å…¥æ¨¡æ‹Ÿæ—¶é—´ï¼ˆåˆ†é’Ÿï¼‰ï¼š");
+  // ÌáÊ¾ÓÃ»§ÊäÈëÄ£Äâ²ÎÊı
+  printf("ÊäÈëÄ£ÄâÊ±¼ä£¨·ÖÖÓ£©£º");
   scanf("%d", &s->simulationLength);
-  printf("è¾“å…¥å‡ºçº³å‘˜æ•°é‡ï¼š");
+  printf("ÊäÈë³öÄÉÔ±ÊıÁ¿£º");
   scanf("%d", &s->numTellers);
-  printf("è¾“å…¥åˆ°è¾¾æ—¶é—´èŒƒå›´ï¼ˆåˆ†é’Ÿï¼‰ï¼š");
+  printf("ÊäÈëµ½´ïÊ±¼ä·¶Î§£¨·ÖÖÓ£©£º");
   scanf("%d%d", &s->arrivalLow, &s->arrivalHigh);
-  printf("è¾“å…¥æœåŠ¡æ—¶é—´èŒƒå›´ï¼ˆåˆ†é’Ÿï¼‰ï¼š");
+  printf("ÊäÈë·şÎñÊ±¼ä·¶Î§£¨·ÖÖÓ£©£º");
   scanf("%d%d", &s->serviceLow, &s->serviceHigh);
   printf("Enter the longest waitting time the customer can tolerate in minutes: ");
-  scanf("%d", &s->waitHigh); // ç”¨æˆ·åœ¨æ­¤å¤„æä¾› VIP ç­‰å¾…å®¹å¿åº¦
+  scanf("%d", &s->waitHigh); // ÓÃ»§ÔÚ´Ë´¦Ìá¹© VIP µÈ´ıÈİÈÌ¶È
 
-  // åˆå§‹åŒ–å¹¶æ’å…¥ç¬¬ä¸€ä¸ªåˆ°è¾¾äº‹ä»¶åˆ°ä¼˜å…ˆçº§é˜Ÿåˆ—
-  // ä¿®æ­£ï¼šåœ¨åˆ°è¾¾äº‹ä»¶ä¸­å­˜å‚¨æœåŠ¡æ—¶é—´
+  // ³õÊ¼»¯²¢²åÈëµÚÒ»¸öµ½´ïÊÂ¼şµ½ÓÅÏÈ¼¶¶ÓÁĞ
+  // ĞŞÕı£ºÔÚµ½´ïÊÂ¼şÖĞ´æ´¢·şÎñÊ±¼ä
   int firstServiceTime = Get_ServiceTime(s);
   InitEvent(firstevent, 0, arrival, 1, 0, 0, firstServiceTime, s->ivs[s->ivsIndex++]);
   InitPQueue(&(s->pq));
-  InitPQueue(&(s->vipPQueue)); // æ–°å¢ï¼šåˆå§‹åŒ–å…¨å±€ VIP ä¼˜å…ˆçº§é˜Ÿåˆ—
+  InitPQueue(&(s->vipPQueue)); // ĞÂÔö£º³õÊ¼»¯È«¾Ö VIP ÓÅÏÈ¼¶¶ÓÁĞ
   PQInsert(&(s->pq), *firstevent);
-  free(firstevent); // é‡Šæ”¾ä¸´æ—¶äº‹ä»¶å†…å­˜
+  free(firstevent); // ÊÍ·ÅÁÙÊ±ÊÂ¼şÄÚ´æ
 }
 
-// åœ¨æŒ‡å®šèŒƒå›´å†…è®¡ç®—ä¸‹ä¸€ä¸ªå®¢æˆ·åˆ°è¾¾æ—¶é—´
+// ÔÚÖ¸¶¨·¶Î§ÄÚ¼ÆËãÏÂÒ»¸ö¿Í»§µ½´ïÊ±¼ä
 int NextArrivalTime(Simulation *s)
 {
   return s->arrivalLow + rand() % (s->arrivalHigh - s->arrivalLow + 1);
 }
 
-// åœ¨æŒ‡å®šèŒƒå›´å†…è®¡ç®—éšæœºæœåŠ¡æ—¶é—´
+// ÔÚÖ¸¶¨·¶Î§ÄÚ¼ÆËãËæ»ú·şÎñÊ±¼ä
 int Get_ServiceTime(Simulation *s)
 {
   return s->serviceLow + rand() % (s->serviceHigh - s->serviceLow + 1);
 }
 
-// ä¿®æ”¹ï¼šç¡®å®šä¸‹ä¸€ä¸ªå¯ç”¨å‡ºçº³å‘˜ï¼Œä¼˜å…ˆ VIP
+// ĞŞ¸Ä£ºÈ·¶¨ÏÂÒ»¸ö¿ÉÓÃ³öÄÉÔ±£¬ÓÅÏÈ VIP
 int NextAvailableTeller(Simulation *s, isVip iv, int currentTime)
 {
   int bestTellerID = -1;
-  int minFinishTime = 9999999; // ä½¿ç”¨ä¸€ä¸ªè¾ƒå¤§çš„åˆå§‹å€¼
+  int minFinishTime = 9999999; // Ê¹ÓÃÒ»¸ö½Ï´óµÄ³õÊ¼Öµ
   int minQueueCount = 9999999;
 
-  // é˜¶æ®µ 1ï¼šå¯»æ‰¾ä»»ä½•å®Œå…¨ç©ºé—²çš„å‡ºçº³å‘˜
+  // ½×¶Î 1£ºÑ°ÕÒÈÎºÎÍêÈ«¿ÕÏĞµÄ³öÄÉÔ±
   for (int i = 1; i <= s->numTellers; i++)
   {
     if (s->tstat[i].finishService <= currentTime && IsTellerQueueEmpty(&s->tstat[i]))
     {
-      return i; // æ‰¾åˆ°ä¸€ä¸ªç©ºé—²å‡ºçº³å‘˜ï¼Œç«‹å³è¿”å›
+      return i; // ÕÒµ½Ò»¸ö¿ÕÏĞ³öÄÉÔ±£¬Á¢¼´·µ»Ø
     }
   }
 
-  // é˜¶æ®µ 2ï¼šå¦‚æœæ²¡æœ‰ç©ºé—²å‡ºçº³å‘˜
-  if (iv == Vip) // VIP å®¢æˆ·ï¼šå¯»æ‰¾é¢„è®¡å®ŒæˆæœåŠ¡æ—¶é—´æœ€æ—©çš„å‡ºçº³å‘˜ï¼ˆå¯èƒ½ä¸­æ–­ï¼‰
+  // ½×¶Î 2£ºÈç¹ûÃ»ÓĞ¿ÕÏĞ³öÄÉÔ±
+  if (iv == Vip) // VIP ¿Í»§£ºÑ°ÕÒÔ¤¼ÆÍê³É·şÎñÊ±¼ä×îÔçµÄ³öÄÉÔ±£¨¿ÉÄÜÖĞ¶Ï£©
   {
     for (int i = 1; i <= s->numTellers; i++)
     {
@@ -179,7 +179,7 @@ int NextAvailableTeller(Simulation *s, isVip iv, int currentTime)
       }
       else if (s->tstat[i].finishService == minFinishTime)
       {
-        // å®Œæˆæ—¶é—´ç›¸åŒï¼Œé€‰æ‹©é˜Ÿåˆ—æ›´çŸ­çš„
+        // Íê³ÉÊ±¼äÏàÍ¬£¬Ñ¡Ôñ¶ÓÁĞ¸ü¶ÌµÄ
         if (s->tstat[i].queueCount < s->tstat[bestTellerID].queueCount)
         {
           bestTellerID = i;
@@ -187,7 +187,7 @@ int NextAvailableTeller(Simulation *s, isVip iv, int currentTime)
       }
     }
   }
-  else // æ™®é€šå®¢æˆ·ï¼šå¯»æ‰¾é˜Ÿåˆ—æœ€çŸ­çš„å‡ºçº³å‘˜
+  else // ÆÕÍ¨¿Í»§£ºÑ°ÕÒ¶ÓÁĞ×î¶ÌµÄ³öÄÉÔ±
   {
     for (int i = 1; i <= s->numTellers; i++)
     {
@@ -198,7 +198,7 @@ int NextAvailableTeller(Simulation *s, isVip iv, int currentTime)
       }
       else if (s->tstat[i].queueCount == minQueueCount)
       {
-        // é˜Ÿåˆ—é•¿åº¦ç›¸åŒï¼Œé€‰æ‹©å®Œæˆæ—¶é—´æ›´æ—©çš„
+        // ¶ÓÁĞ³¤¶ÈÏàÍ¬£¬Ñ¡ÔñÍê³ÉÊ±¼ä¸üÔçµÄ
         if (s->tstat[i].finishService < s->tstat[bestTellerID].finishService)
         {
           bestTellerID = i;
@@ -207,7 +207,7 @@ int NextAvailableTeller(Simulation *s, isVip iv, int currentTime)
     }
   }
 
-  // é»˜è®¤åˆ†é…ç»™ 1 å·å‡ºçº³å‘˜ï¼ˆå¦‚æœå‰é¢éƒ½æ²¡æœ‰æ‰¾åˆ°ï¼‰
+  // Ä¬ÈÏ·ÖÅä¸ø 1 ºÅ³öÄÉÔ±£¨Èç¹ûÇ°Ãæ¶¼Ã»ÓĞÕÒµ½£©
   if (bestTellerID == -1)
   {
     return 1;
@@ -215,11 +215,11 @@ int NextAvailableTeller(Simulation *s, isVip iv, int currentTime)
   return bestTellerID;
 }
 
-// è¿è¡Œæ¨¡æ‹Ÿ
+// ÔËĞĞÄ£Äâ
 void RunSimulation(Simulation *s)
 {
-  Event *e = (Event *)malloc(sizeof(Event));        // å½“å‰äº‹ä»¶
-  Event *newevent = (Event *)malloc(sizeof(Event)); // è¦è°ƒåº¦çš„æ–°äº‹ä»¶
+  Event *e = (Event *)malloc(sizeof(Event));        // µ±Ç°ÊÂ¼ş
+  Event *newevent = (Event *)malloc(sizeof(Event)); // Òªµ÷¶ÈµÄĞÂÊÂ¼ş
   int nexttime;
   int tellerID;
   int waittime;
@@ -227,122 +227,122 @@ void RunSimulation(Simulation *s)
 
   while (!PQEmpty(&(s->pq)))
   {
-    *e = PQDelete(&(s->pq)); // ä»ä¼˜å…ˆçº§é˜Ÿåˆ—ä¸­è·å–ä¸‹ä¸€ä¸ªäº‹ä»¶
+    *e = PQDelete(&(s->pq)); // ´ÓÓÅÏÈ¼¶¶ÓÁĞÖĞ»ñÈ¡ÏÂÒ»¸öÊÂ¼ş
 
-    // å¦‚æœäº‹ä»¶æ—¶é—´è¶…è¿‡æ¨¡æ‹Ÿé•¿åº¦ï¼Œè€ƒè™‘å®ƒæ˜¯å¦æ˜¯ä¸åº”è¯¥å¤„ç†çš„åˆ°è¾¾äº‹ä»¶
+    // Èç¹ûÊÂ¼şÊ±¼ä³¬¹ıÄ£Äâ³¤¶È£¬¿¼ÂÇËüÊÇ·ñÊÇ²»Ó¦¸Ã´¦ÀíµÄµ½´ïÊÂ¼ş
     if (GetTime(e) > s->simulationLength)
     {
       if (GetEventType(e) == arrival)
       {
-        // å¦‚æœåˆ°è¾¾äº‹ä»¶å‘ç”Ÿåœ¨æ¨¡æ‹Ÿé•¿åº¦ä¹‹åï¼Œæˆ‘ä»¬ä¸å†å¤„ç†å®ƒã€‚
-        // è¿™é˜»æ­¢äº†æ–°å®¢æˆ·åœ¨æ¨¡æ‹Ÿåä¹‰ç»“æŸä¹‹åè¿›å…¥ç³»ç»Ÿã€‚
+        // Èç¹ûµ½´ïÊÂ¼ş·¢ÉúÔÚÄ£Äâ³¤¶ÈÖ®ºó£¬ÎÒÃÇ²»ÔÙ´¦ÀíËü¡£
+        // Õâ×èÖ¹ÁËĞÂ¿Í»§ÔÚÄ£ÄâÃûÒå½áÊøÖ®ºó½øÈëÏµÍ³¡£
         continue;
       }
-      // å‘ç”Ÿåœ¨æ¨¡æ‹Ÿé•¿åº¦ä¹‹åçš„ç¦»å¼€äº‹ä»¶ä»å¿…é¡»å¤„ç†ï¼Œ
-      // ä»¥æ­£ç¡®è®¡ç®—å‡ºçº³å‘˜ç»Ÿè®¡ä¿¡æ¯å¹¶æ¸…ç©ºé˜Ÿåˆ—ã€‚
+      // ·¢ÉúÔÚÄ£Äâ³¤¶ÈÖ®ºóµÄÀë¿ªÊÂ¼şÈÔ±ØĞë´¦Àí£¬
+      // ÒÔÕıÈ·¼ÆËã³öÄÉÔ±Í³¼ÆĞÅÏ¢²¢Çå¿Õ¶ÓÁĞ¡£
     }
 
     if (GetEventType(e) == arrival)
     {
-      printf("æ—¶é—´: %2d\t%så®¢æˆ· %d åˆ°è¾¾\n", GetTime(e), (GetCustomerType(e) == Vip) ? "VIP" : "æ™®é€š", GetCustomerID(e));
+      printf("Ê±¼ä: %2d\t%s¿Í»§ %d µ½´ï\n", GetTime(e), (GetCustomerType(e) == Vip) ? "VIP" : "ÆÕÍ¨", GetCustomerID(e));
 
-      // å¦‚æœåœ¨æ¨¡æ‹Ÿé™åˆ¶å’Œé¢„å®šä¹‰ VIP åˆ—è¡¨é™åˆ¶å†…ï¼Œè°ƒåº¦ä¸‹ä¸€ä¸ªåˆ°è¾¾äº‹ä»¶
+      // Èç¹ûÔÚÄ£ÄâÏŞÖÆºÍÔ¤¶¨Òå VIP ÁĞ±íÏŞÖÆÄÚ£¬µ÷¶ÈÏÂÒ»¸öµ½´ïÊÂ¼ş
       nexttime = GetTime(e) + NextArrivalTime(s);
       if (nexttime <= s->simulationLength && s->ivsIndex < MAXCUSTLENGTH)
       {
         s->nextCustomer++;
-        // ä¿®æ­£ï¼šåœ¨åˆ°è¾¾äº‹ä»¶ä¸­å­˜å‚¨æœåŠ¡æ—¶é—´
+        // ĞŞÕı£ºÔÚµ½´ïÊÂ¼şÖĞ´æ´¢·şÎñÊ±¼ä
         int newCustomerServiceTime = Get_ServiceTime(s);
         InitEvent(newevent, nexttime, arrival, s->nextCustomer, 0, 0, newCustomerServiceTime, s->ivs[s->ivsIndex++]);
         PQInsert(&(s->pq), *newevent);
       }
 
-      // è·å–å½“å‰åˆ°è¾¾å®¢æˆ·çš„æœåŠ¡æ—¶é—´ï¼ˆå·²åœ¨ Event ä¸­å­˜å‚¨ï¼‰
+      // »ñÈ¡µ±Ç°µ½´ï¿Í»§µÄ·şÎñÊ±¼ä£¨ÒÑÔÚ Event ÖĞ´æ´¢£©
       int currentCustomerServiceTime = GetServiceTime(e);
       iv = GetCustomerType(e);
       tellerID = NextAvailableTeller(s, iv, GetTime(e));
 
-      // è°ƒè¯•æ‰“å°ï¼šæ˜¾ç¤ºå†³ç­–å‚æ•°
-      printf("DEBUG: å®¢æˆ· %d (VIP: %d) åˆ°è¾¾æ—¶é—´ %d. é€‰æ‹©çš„å‡ºçº³å‘˜: %d. å‡ºçº³å‘˜ %d é¢„è®¡ç©ºé—²æ—¶é—´: %d. å‡ºçº³å‘˜ %d é˜Ÿåˆ—æ˜¯å¦ä¸ºç©º: %d. (å½“å‰é˜Ÿåˆ—é•¿åº¦: %d)\n",
+      // µ÷ÊÔ´òÓ¡£ºÏÔÊ¾¾ö²ß²ÎÊı
+      printf("DEBUG: ¿Í»§ %d (VIP: %d) µ½´ïÊ±¼ä %d. Ñ¡ÔñµÄ³öÄÉÔ±: %d. ³öÄÉÔ± %d Ô¤¼Æ¿ÕÏĞÊ±¼ä: %d. ³öÄÉÔ± %d ¶ÓÁĞÊÇ·ñÎª¿Õ: %d. (µ±Ç°¶ÓÁĞ³¤¶È: %d)\n",
              GetCustomerID(e), iv, GetTime(e), tellerID, tellerID, s->tstat[tellerID].finishService, tellerID, IsTellerQueueEmpty(&s->tstat[tellerID]), s->tstat[tellerID].queueCount);
 
-      if (iv == Vip) // VIP å®¢æˆ·åˆ°è¾¾
+      if (iv == Vip) // VIP ¿Í»§µ½´ï
       {
-        // æ£€æŸ¥å‡ºçº³å‘˜æ˜¯å¦å¿™ç¢Œä¸”å½“å‰æœåŠ¡çš„æ˜¯æ™®é€šå®¢æˆ·ï¼Œæ˜¯å¦å¯ä»¥ä¸­æ–­
-        if (s->tstat[tellerID].finishService > GetTime(e)) // å‡ºçº³å‘˜å¿™ç¢Œ
+        // ¼ì²é³öÄÉÔ±ÊÇ·ñÃ¦ÂµÇÒµ±Ç°·şÎñµÄÊÇÆÕÍ¨¿Í»§£¬ÊÇ·ñ¿ÉÒÔÖĞ¶Ï
+        if (s->tstat[tellerID].finishService > GetTime(e)) // ³öÄÉÔ±Ã¦Âµ
         {
           Event *currentlyServedEvent = NULL;
-          // è·å–å½“å‰æ­£åœ¨æœåŠ¡çš„å®¢æˆ·äº‹ä»¶ï¼ˆé€šå¸¸æ˜¯ timeline ä¸­çš„æœ€åä¸€ä¸ªäº‹ä»¶ï¼‰
+          // »ñÈ¡µ±Ç°ÕıÔÚ·şÎñµÄ¿Í»§ÊÂ¼ş£¨Í¨³£ÊÇ timeline ÖĞµÄ×îºóÒ»¸öÊÂ¼ş£©
           if (s->tstat[tellerID].timelineCount > 0)
           {
             currentlyServedEvent = &s->tstat[tellerID].timeline[s->tstat[tellerID].timelineCount - 1];
           }
 
-          // ç¡®ä¿æœ‰å®¢æˆ·æ­£åœ¨æœåŠ¡ï¼Œä¸”è¯¥å®¢æˆ·æ˜¯æ™®é€šå®¢æˆ·
+          // È·±£ÓĞ¿Í»§ÕıÔÚ·şÎñ£¬ÇÒ¸Ã¿Í»§ÊÇÆÕÍ¨¿Í»§
           if (currentlyServedEvent != NULL && GetCustomerType(currentlyServedEvent) == notVip)
           {
-            // å‘ç”Ÿä¸­æ–­ï¼šVIP æ’é˜Ÿï¼Œæ™®é€šå®¢æˆ·è¢«æ‰“æ–­
+            // ·¢ÉúÖĞ¶Ï£ºVIP ²å¶Ó£¬ÆÕÍ¨¿Í»§±»´ò¶Ï
             int interruptedCustomerID = GetCustomerID(currentlyServedEvent);
             int originalServiceTime = GetServiceTime(currentlyServedEvent);
-            // å®é™…å¼€å§‹æœåŠ¡æ—¶é—´ = é¢„è®¡ç¦»å¼€æ—¶é—´ - åŸå§‹æœåŠ¡æ—¶é—´
+            // Êµ¼Ê¿ªÊ¼·şÎñÊ±¼ä = Ô¤¼ÆÀë¿ªÊ±¼ä - Ô­Ê¼·şÎñÊ±¼ä
             int serviceStartTime = GetTime(currentlyServedEvent) - GetServiceTime(currentlyServedEvent);
-            int timeServedSoFar = GetTime(e) - serviceStartTime;              // å·²æœåŠ¡æ—¶é—´
-            int remainingServiceTime = originalServiceTime - timeServedSoFar; // å‰©ä½™æœåŠ¡æ—¶é—´
+            int timeServedSoFar = GetTime(e) - serviceStartTime;              // ÒÑ·şÎñÊ±¼ä
+            int remainingServiceTime = originalServiceTime - timeServedSoFar; // Ê£Óà·şÎñÊ±¼ä
             if (remainingServiceTime < 0)
-              remainingServiceTime = 0; // é¿å…è´Ÿå€¼
+              remainingServiceTime = 0; // ±ÜÃâ¸ºÖµ
 
-            printf("æ—¶é—´: %2d\tVIPå®¢æˆ· %d æ’é˜Ÿåˆ°å‡ºçº³å‘˜ %dã€‚æ™®é€šå®¢æˆ· %d è¢«æ‰“æ–­ã€‚å·²æœåŠ¡æ—¶é—´: %dï¼Œå‰©ä½™æœåŠ¡æ—¶é—´: %dã€‚\n",
+            printf("Ê±¼ä: %2d\tVIP¿Í»§ %d ²å¶Óµ½³öÄÉÔ± %d¡£ÆÕÍ¨¿Í»§ %d ±»´ò¶Ï¡£ÒÑ·şÎñÊ±¼ä: %d£¬Ê£Óà·şÎñÊ±¼ä: %d¡£\n",
                    GetTime(e), GetCustomerID(e), tellerID, interruptedCustomerID, timeServedSoFar, remainingServiceTime);
 
-            // 1. ä¸­æ–­æœåŠ¡ï¼šå‡ºçº³å‘˜ç«‹å³ç©ºé—²
+            // 1. ÖĞ¶Ï·şÎñ£º³öÄÉÔ±Á¢¼´¿ÕÏĞ
             s->tstat[tellerID].finishService = GetTime(e);
-            // ä¿®æ­£ï¼šä»æ€»æœåŠ¡æ—¶é—´ä¸­æ‰£é™¤æœªå®Œæˆçš„æœåŠ¡æ—¶é—´
+            // ĞŞÕı£º´Ó×Ü·şÎñÊ±¼äÖĞ¿Û³ıÎ´Íê³ÉµÄ·şÎñÊ±¼ä
             s->tstat[tellerID].totalService -= remainingServiceTime;
 
-            // 2. å°†è¢«æ‰“æ–­çš„æ™®é€šå®¢æˆ·æ”¾å›é˜Ÿåˆ—å¤´éƒ¨
+            // 2. ½«±»´ò¶ÏµÄÆÕÍ¨¿Í»§·Å»Ø¶ÓÁĞÍ·²¿
             Event interruptedCustomerRequeuedEvent;
-            InitEvent(&interruptedCustomerRequeuedEvent, GetTime(e), arrival, // é‡æ–°è®¾ç½®ä¸ºåˆ°è¾¾äº‹ä»¶ç±»å‹
+            InitEvent(&interruptedCustomerRequeuedEvent, GetTime(e), arrival, // ÖØĞÂÉèÖÃÎªµ½´ïÊÂ¼şÀàĞÍ
                       interruptedCustomerID, tellerID,
-                      GetWaitTime(currentlyServedEvent), // ä»…æºå¸¦åŸå§‹ç­‰å¾…æ—¶é—´ï¼Œä¸åŠ å·²æœåŠ¡æ—¶é—´
+                      GetWaitTime(currentlyServedEvent), // ½öĞ¯´øÔ­Ê¼µÈ´ıÊ±¼ä£¬²»¼ÓÒÑ·şÎñÊ±¼ä
                       originalServiceTime, notVip);
 
-            InsertVipIntoQueue(&s->tstat[tellerID], interruptedCustomerRequeuedEvent); // æ’å…¥é˜Ÿåˆ—å¤´éƒ¨
+            InsertVipIntoQueue(&s->tstat[tellerID], interruptedCustomerRequeuedEvent); // ²åÈë¶ÓÁĞÍ·²¿
 
-            // 3. è®¡ç®—æ’é˜Ÿé€ æˆçš„é¢å¤–ç­‰å¾…æ—¶é—´
+            // 3. ¼ÆËã²å¶ÓÔì³ÉµÄ¶îÍâµÈ´ıÊ±¼ä
             s->totalCutInTime += remainingServiceTime;
 
-            // 4. ç«‹å³å¼€å§‹æœåŠ¡å½“å‰åˆ°è¾¾çš„ VIP å®¢æˆ·
-            waittime = 0; // VIP ç«‹å³æœåŠ¡ï¼Œç­‰å¾…æ—¶é—´ä¸º 0
+            // 4. Á¢¼´¿ªÊ¼·şÎñµ±Ç°µ½´ïµÄ VIP ¿Í»§
+            waittime = 0; // VIP Á¢¼´·şÎñ£¬µÈ´ıÊ±¼äÎª 0
             s->tstat[tellerID].totalCustomerWait += waittime;
             s->tstat[tellerID].totalCustomerCount++;
-            // ä½¿ç”¨ VIP å®¢æˆ·è‡ªå·±çš„æœåŠ¡æ—¶é—´
+            // Ê¹ÓÃ VIP ¿Í»§×Ô¼ºµÄ·şÎñÊ±¼ä
             s->tstat[tellerID].totalService += currentCustomerServiceTime;
 
             InitEvent(newevent, GetTime(e) + currentCustomerServiceTime, departure,
                       GetCustomerID(e), tellerID, waittime, currentCustomerServiceTime, iv);
             PQInsert(&(s->pq), *newevent);
-            s->tstat[tellerID].finishService = GetTime(e) + currentCustomerServiceTime; // æ›´æ–°å‡ºçº³å‘˜çš„ä¸‹ä¸€ä¸ªå¯ç”¨æ—¶é—´
+            s->tstat[tellerID].finishService = GetTime(e) + currentCustomerServiceTime; // ¸üĞÂ³öÄÉÔ±µÄÏÂÒ»¸ö¿ÉÓÃÊ±¼ä
 
             if (s->tstat[tellerID].timelineCount < MaxPQSize)
             {
               s->tstat[tellerID].timeline[s->tstat[tellerID].timelineCount] = *newevent;
               s->tstat[tellerID].timelineCount++;
             }
-            printf("\tå‡ºçº³å‘˜ %d\tç­‰å¾…æ—¶é—´ %d\tæœåŠ¡æ—¶é—´ %d (VIP ç«‹å³æœåŠ¡ï¼Œæ™®é€šå®¢æˆ·è¢«ä¸­æ–­)\n", tellerID, waittime, currentCustomerServiceTime);
+            printf("\t³öÄÉÔ± %d\tµÈ´ıÊ±¼ä %d\t·şÎñÊ±¼ä %d (VIP Á¢¼´·şÎñ£¬ÆÕÍ¨¿Í»§±»ÖĞ¶Ï)\n", tellerID, waittime, currentCustomerServiceTime);
           }
           else
-          { // å‡ºçº³å‘˜å¿™ç¢Œï¼Œä½†ä¸æ˜¯åœ¨æœåŠ¡å¯ä¸­æ–­çš„æ™®é€šå®¢æˆ·ï¼ˆä¾‹å¦‚ï¼Œåœ¨æœåŠ¡å¦ä¸€ä¸ª VIPï¼‰
-            printf("DEBUG: VIPå®¢æˆ· %d åˆ°è¾¾ï¼Œå‡ºçº³å‘˜ %d å¿™ç¢Œä½†æ— æ³•ä¸­æ–­æ™®é€šå®¢æˆ·æˆ–æœåŠ¡ä¸­ä¸ºå…¶ä»– VIPã€‚æ­£å¸¸å…¥é˜Ÿã€‚\n", GetCustomerID(e), tellerID);
-            EnqueueCustomer(&s->tstat[tellerID], *e); // VIP æ­£å¸¸æ’é˜Ÿ
+          { // ³öÄÉÔ±Ã¦Âµ£¬µ«²»ÊÇÔÚ·şÎñ¿ÉÖĞ¶ÏµÄÆÕÍ¨¿Í»§£¨ÀıÈç£¬ÔÚ·şÎñÁíÒ»¸ö VIP£©
+            printf("DEBUG: VIP¿Í»§ %d µ½´ï£¬³öÄÉÔ± %d Ã¦Âµµ«ÎŞ·¨ÖĞ¶ÏÆÕÍ¨¿Í»§»ò·şÎñÖĞÎªÆäËû VIP¡£Õı³£Èë¶Ó¡£\n", GetCustomerID(e), tellerID);
+            EnqueueCustomer(&s->tstat[tellerID], *e); // VIP Õı³£ÅÅ¶Ó
           }
         }
         else if (s->tstat[tellerID].finishService <= GetTime(e) && IsTellerQueueEmpty(&s->tstat[tellerID]))
         {
-          // å‡ºçº³å‘˜ç©ºé—²ä¸”é˜Ÿåˆ—ä¸ºç©ºï¼ŒVIP ç«‹å³æœåŠ¡
+          // ³öÄÉÔ±¿ÕÏĞÇÒ¶ÓÁĞÎª¿Õ£¬VIP Á¢¼´·şÎñ
           waittime = 0;
           s->tstat[tellerID].totalCustomerWait += waittime;
           s->tstat[tellerID].totalCustomerCount++;
-          // ä½¿ç”¨ VIP å®¢æˆ·è‡ªå·±çš„æœåŠ¡æ—¶é—´
+          // Ê¹ÓÃ VIP ¿Í»§×Ô¼ºµÄ·şÎñÊ±¼ä
           s->tstat[tellerID].totalService += currentCustomerServiceTime;
 
           InitEvent(newevent, GetTime(e) + currentCustomerServiceTime,
@@ -356,46 +356,46 @@ void RunSimulation(Simulation *s)
             s->tstat[tellerID].timeline[s->tstat[tellerID].timelineCount] = *newevent;
             s->tstat[tellerID].timelineCount++;
           }
-          printf("\tå‡ºçº³å‘˜ %d\tç­‰å¾…æ—¶é—´ %d\tæœåŠ¡æ—¶é—´ %d (ç«‹å³æœåŠ¡)\n", tellerID, waittime, currentCustomerServiceTime);
+          printf("\t³öÄÉÔ± %d\tµÈ´ıÊ±¼ä %d\t·şÎñÊ±¼ä %d (Á¢¼´·şÎñ)\n", tellerID, waittime, currentCustomerServiceTime);
         }
-        else // å‡ºçº³å‘˜å¿™ç¢Œï¼Œæœ‰é˜Ÿåˆ—ï¼Œä¸” VIP æ— æ³•ä¸­æ–­ï¼ˆä¾‹å¦‚ï¼Œé˜Ÿåˆ—ä¸­æœ‰å…¶ä»– VIPï¼‰
+        else // ³öÄÉÔ±Ã¦Âµ£¬ÓĞ¶ÓÁĞ£¬ÇÒ VIP ÎŞ·¨ÖĞ¶Ï£¨ÀıÈç£¬¶ÓÁĞÖĞÓĞÆäËû VIP£©
         {
-          // VIP å®¢æˆ·æ­£å¸¸æ’é˜Ÿ
+          // VIP ¿Í»§Õı³£ÅÅ¶Ó
           EnqueueCustomer(&s->tstat[tellerID], *e);
-          printf("\tå®¢æˆ· %d (VIP: %d) åœ¨å‡ºçº³å‘˜ %d æ’é˜Ÿ (æ­£å¸¸å…¥é˜Ÿ). é˜Ÿåˆ—å¤´: %d, é˜Ÿåˆ—å°¾: %d, å½“å‰é˜Ÿåˆ—é•¿åº¦: %d\n",
+          printf("\t¿Í»§ %d (VIP: %d) ÔÚ³öÄÉÔ± %d ÅÅ¶Ó (Õı³£Èë¶Ó). ¶ÓÁĞÍ·: %d, ¶ÓÁĞÎ²: %d, µ±Ç°¶ÓÁĞ³¤¶È: %d\n",
                  GetCustomerID(e), iv, tellerID,
                  (s->tstat[tellerID].customerQueueHead ? GetCustomerID(&s->tstat[tellerID].customerQueueHead->customerEvent) : 0),
                  (s->tstat[tellerID].customerQueueTail ? GetCustomerID(&s->tstat[tellerID].customerQueueTail->customerEvent) : 0),
                  s->tstat[tellerID].queueCount);
         }
       }
-      else // æ™®é€šå®¢æˆ·åˆ°è¾¾
+      else // ÆÕÍ¨¿Í»§µ½´ï
       {
         if (s->tstat[tellerID].finishService <= GetTime(e) && IsTellerQueueEmpty(&s->tstat[tellerID]))
         {
-          waittime = 0; // ç«‹å³æœåŠ¡
+          waittime = 0; // Á¢¼´·şÎñ
           s->tstat[tellerID].totalCustomerWait += waittime;
           s->tstat[tellerID].totalCustomerCount++;
-          // ä½¿ç”¨æ™®é€šå®¢æˆ·è‡ªå·±çš„æœåŠ¡æ—¶é—´
+          // Ê¹ÓÃÆÕÍ¨¿Í»§×Ô¼ºµÄ·şÎñÊ±¼ä
           s->tstat[tellerID].totalService += currentCustomerServiceTime;
 
           InitEvent(newevent, GetTime(e) + currentCustomerServiceTime,
                     departure, GetCustomerID(e), tellerID,
                     waittime, currentCustomerServiceTime, iv);
           PQInsert(&(s->pq), *newevent);
-          s->tstat[tellerID].finishService = GetTime(e) + currentCustomerServiceTime; // æ›´æ–°å‡ºçº³å‘˜çš„ä¸‹ä¸€ä¸ªå¯ç”¨æ—¶é—´
+          s->tstat[tellerID].finishService = GetTime(e) + currentCustomerServiceTime; // ¸üĞÂ³öÄÉÔ±µÄÏÂÒ»¸ö¿ÉÓÃÊ±¼ä
 
           if (s->tstat[tellerID].timelineCount < MaxPQSize)
           {
             s->tstat[tellerID].timeline[s->tstat[tellerID].timelineCount] = *newevent;
             s->tstat[tellerID].timelineCount++;
           }
-          printf("\tå‡ºçº³å‘˜ %d\tç­‰å¾…æ—¶é—´ %d\tæœåŠ¡æ—¶é—´ %d (ç«‹å³æœåŠ¡)\n", tellerID, waittime, currentCustomerServiceTime);
+          printf("\t³öÄÉÔ± %d\tµÈ´ıÊ±¼ä %d\t·şÎñÊ±¼ä %d (Á¢¼´·şÎñ)\n", tellerID, waittime, currentCustomerServiceTime);
         }
-        else // å®¢æˆ·éœ€è¦æ’é˜Ÿ
+        else // ¿Í»§ĞèÒªÅÅ¶Ó
         {
-          EnqueueCustomer(&s->tstat[tellerID], *e); // *e æºå¸¦äº†æ­£ç¡®çš„æœåŠ¡æ—¶é—´
-          printf("\tå®¢æˆ· %d (VIP: %d) åœ¨å‡ºçº³å‘˜ %d æ’é˜Ÿ (æ­£å¸¸å…¥é˜Ÿ). é˜Ÿåˆ—å¤´: %d, é˜Ÿåˆ—å°¾: %d, å½“å‰é˜Ÿåˆ—é•¿åº¦: %d\n",
+          EnqueueCustomer(&s->tstat[tellerID], *e); // *e Ğ¯´øÁËÕıÈ·µÄ·şÎñÊ±¼ä
+          printf("\t¿Í»§ %d (VIP: %d) ÔÚ³öÄÉÔ± %d ÅÅ¶Ó (Õı³£Èë¶Ó). ¶ÓÁĞÍ·: %d, ¶ÓÁĞÎ²: %d, µ±Ç°¶ÓÁĞ³¤¶È: %d\n",
                  GetCustomerID(e), iv, tellerID,
                  (s->tstat[tellerID].customerQueueHead ? GetCustomerID(&s->tstat[tellerID].customerQueueHead->customerEvent) : 0),
                  (s->tstat[tellerID].customerQueueTail ? GetCustomerID(&s->tstat[tellerID].customerQueueTail->customerEvent) : 0),
@@ -405,26 +405,26 @@ void RunSimulation(Simulation *s)
     }
     else // GetEventType(e) == departure
     {
-      // ç´¯åŠ  VIP/æ™®é€šå®¢æˆ·æ•°é‡å’Œç­‰å¾…æ—¶é—´
+      // ÀÛ¼Ó VIP/ÆÕÍ¨¿Í»§ÊıÁ¿ºÍµÈ´ıÊ±¼ä
       if (GetCustomerType(e) == Vip)
       {
         s->totalVipCustomerCount++;
-        s->totalVipWaitTime += GetWaitTime(e); // ç´¯åŠ  VIP çš„å®é™…ç­‰å¾…æ—¶é—´
+        s->totalVipWaitTime += GetWaitTime(e); // ÀÛ¼Ó VIP µÄÊµ¼ÊµÈ´ıÊ±¼ä
       }
       else
       {
         s->totalOrdinaryCustomerCount++;
       }
 
-      printf("æ—¶é—´: %2d\t%så®¢æˆ· %d ç¦»å¼€\n", GetTime(e), (GetCustomerType(e) == Vip) ? "VIP" : "æ™®é€š", GetCustomerID(e));
-      printf("\tå‡ºçº³å‘˜ %d\tç­‰å¾…æ—¶é—´ %d\tæœåŠ¡æ—¶é—´ %d\n", GetTellerID(e), GetWaitTime(e), GetServiceTime(e));
+      printf("Ê±¼ä: %2d\t%s¿Í»§ %d Àë¿ª\n", GetTime(e), (GetCustomerType(e) == Vip) ? "VIP" : "ÆÕÍ¨", GetCustomerID(e));
+      printf("\t³öÄÉÔ± %d\tµÈ´ıÊ±¼ä %d\t·şÎñÊ±¼ä %d\n", GetTellerID(e), GetWaitTime(e), GetServiceTime(e));
       tellerID = GetTellerID(e);
 
-      printf("DEBUG: å‡ºçº³å‘˜ %d ç¦»å¼€æ—¶é—´ %d. é˜Ÿåˆ—æ˜¯å¦ä¸ºç©º: %d. (å½“å‰é˜Ÿåˆ—é•¿åº¦: %d)\n", tellerID, GetTime(e), IsTellerQueueEmpty(&s->tstat[tellerID]), s->tstat[tellerID].queueCount);
+      printf("DEBUG: ³öÄÉÔ± %d Àë¿ªÊ±¼ä %d. ¶ÓÁĞÊÇ·ñÎª¿Õ: %d. (µ±Ç°¶ÓÁĞ³¤¶È: %d)\n", tellerID, GetTime(e), IsTellerQueueEmpty(&s->tstat[tellerID]), s->tstat[tellerID].queueCount);
 
-      // --- VIP é•¿ç­‰å¾…ç­–ç•¥ ---
-      // æ­¥éª¤ 1ï¼šé‡æ–°æ£€æŸ¥æ‰€æœ‰é˜Ÿåˆ—ä¸­çš„ VIPï¼Œå°†ç­‰å¾…æ—¶é—´è¿‡é•¿çš„ VIP æ”¾å…¥å…¨å±€ vipPQueue
-      InitPQueue(&(s->vipPQueue)); // é‡æ–°åˆå§‹åŒ–ä»¥æ¸…ç©º
+      // --- VIP ³¤µÈ´ı²ßÂÔ ---
+      // ²½Öè 1£ºÖØĞÂ¼ì²éËùÓĞ¶ÓÁĞÖĞµÄ VIP£¬½«µÈ´ıÊ±¼ä¹ı³¤µÄ VIP ·ÅÈëÈ«¾Ö vipPQueue
+      InitPQueue(&(s->vipPQueue)); // ÖØĞÂ³õÊ¼»¯ÒÔÇå¿Õ
 
       for (int i = 1; i <= s->numTellers; i++)
       {
@@ -434,15 +434,15 @@ void RunSimulation(Simulation *s)
           Event *queuedEvent = &current->customerEvent;
           if (GetCustomerType(queuedEvent) == Vip)
           {
-            int current_wait_time = GetTime(e) - GetTime(queuedEvent); // å½“å‰å·²ç­‰å¾…æ—¶é—´
+            int current_wait_time = GetTime(e) - GetTime(queuedEvent); // µ±Ç°ÒÑµÈ´ıÊ±¼ä
             if (current_wait_time >= s->waitHigh)
             {
-              // å­˜å‚¨å¿…è¦ä¿¡æ¯ï¼Œå¹¶ç”¨è´Ÿç­‰å¾…æ—¶é—´ä»¥ä¾¿ PQ æ’åºï¼ˆå°å€¼ä¼˜å…ˆï¼‰
+              // ´æ´¢±ØÒªĞÅÏ¢£¬²¢ÓÃ¸ºµÈ´ıÊ±¼äÒÔ±ã PQ ÅÅĞò£¨Ğ¡ÖµÓÅÏÈ£©
               Event temp_vip_event;
-              // ä¿®æ­£ï¼šç›´æ¥ä»é˜Ÿåˆ—ä¸­çš„äº‹ä»¶è·å–æœåŠ¡æ—¶é—´
+              // ĞŞÕı£ºÖ±½Ó´Ó¶ÓÁĞÖĞµÄÊÂ¼ş»ñÈ¡·şÎñÊ±¼ä
               InitEvent(&temp_vip_event, -current_wait_time, departure,
-                        GetCustomerID(queuedEvent), i,                        // å­˜å‚¨åŸå§‹å‡ºçº³å‘˜ ID
-                        current_wait_time, GetServiceTime(queuedEvent), Vip); // å­˜å‚¨å®é™…ç­‰å¾…æ—¶é—´å’ŒæœåŠ¡æ—¶é—´
+                        GetCustomerID(queuedEvent), i,                        // ´æ´¢Ô­Ê¼³öÄÉÔ± ID
+                        current_wait_time, GetServiceTime(queuedEvent), Vip); // ´æ´¢Êµ¼ÊµÈ´ıÊ±¼äºÍ·şÎñÊ±¼ä
               PQInsert(&(s->vipPQueue), temp_vip_event);
             }
           }
@@ -450,20 +450,20 @@ void RunSimulation(Simulation *s)
         }
       }
 
-      // æ­¥éª¤ 2ï¼šå†³å®šä¸‹ä¸€ä¸ªå®¢æˆ·æœåŠ¡ï¼ˆä¼˜å…ˆå¤„ç†ç­‰å¾…è¿‡é•¿çš„ VIPï¼‰
+      // ²½Öè 2£º¾ö¶¨ÏÂÒ»¸ö¿Í»§·şÎñ£¨ÓÅÏÈ´¦ÀíµÈ´ı¹ı³¤µÄ VIP£©
       if (!PQEmpty(&(s->vipPQueue)))
       {
         Event highPriorityVip = PQDelete(&(s->vipPQueue));
         int vipCustomerID = GetCustomerID(&highPriorityVip);
-        int originalTeller = GetTellerID(&highPriorityVip); // VIP æœ€åˆæ‰€åœ¨çš„é˜Ÿåˆ—å‡ºçº³å‘˜
+        int originalTeller = GetTellerID(&highPriorityVip); // VIP ×î³õËùÔÚµÄ¶ÓÁĞ³öÄÉÔ±
         int vipWaitedTime = GetWaitTime(&highPriorityVip);
-        int vipServiceTime = GetServiceTime(&highPriorityVip); // VIP åŸå§‹çš„æœåŠ¡æ—¶é—´
+        int vipServiceTime = GetServiceTime(&highPriorityVip); // VIP Ô­Ê¼µÄ·şÎñÊ±¼ä
 
-        // å¯»æ‰¾ä¸€ä¸ªç©ºé—²çš„å‡ºçº³å‘˜ï¼Œæˆ–è€…ä¸€ä¸ªå¯ä»¥ä¸­æ–­æ™®é€šå®¢æˆ·çš„å‡ºçº³å‘˜
+        // Ñ°ÕÒÒ»¸ö¿ÕÏĞµÄ³öÄÉÔ±£¬»òÕßÒ»¸ö¿ÉÒÔÖĞ¶ÏÆÕÍ¨¿Í»§µÄ³öÄÉÔ±
         int targetTellerForVip = -1;
         int foundInterruptibleTeller = 0;
 
-        // 1. ä¼˜å…ˆå¯»æ‰¾ç©ºé—²å‡ºçº³å‘˜
+        // 1. ÓÅÏÈÑ°ÕÒ¿ÕÏĞ³öÄÉÔ±
         for (int i = 1; i <= s->numTellers; i++)
         {
           if (s->tstat[i].finishService <= GetTime(e) && IsTellerQueueEmpty(&s->tstat[i]))
@@ -473,13 +473,13 @@ void RunSimulation(Simulation *s)
           }
         }
 
-        // 2. å¦‚æœæ²¡æœ‰ç©ºé—²å‡ºçº³å‘˜ï¼Œå¯»æ‰¾å½“å‰æ­£åœ¨æœåŠ¡æ™®é€šå®¢æˆ·çš„å‡ºçº³å‘˜è¿›è¡Œä¸­æ–­
+        // 2. Èç¹ûÃ»ÓĞ¿ÕÏĞ³öÄÉÔ±£¬Ñ°ÕÒµ±Ç°ÕıÔÚ·şÎñÆÕÍ¨¿Í»§µÄ³öÄÉÔ±½øĞĞÖĞ¶Ï
         if (targetTellerForVip == -1)
         {
           for (int i = 1; i <= s->numTellers; i++)
           {
             if (s->tstat[i].finishService > GetTime(e))
-            { // å‡ºçº³å‘˜å¿™ç¢Œ
+            { // ³öÄÉÔ±Ã¦Âµ
               Event *currentlyServedEvent = NULL;
               if (s->tstat[i].timelineCount > 0)
               {
@@ -487,7 +487,7 @@ void RunSimulation(Simulation *s)
               }
               if (currentlyServedEvent != NULL && GetCustomerType(currentlyServedEvent) == notVip)
               {
-                targetTellerForVip = i; // æ‰¾åˆ°å¯ä¸­æ–­çš„å‡ºçº³å‘˜
+                targetTellerForVip = i; // ÕÒµ½¿ÉÖĞ¶ÏµÄ³öÄÉÔ±
                 foundInterruptibleTeller = 1;
                 break;
               }
@@ -497,44 +497,44 @@ void RunSimulation(Simulation *s)
 
         if (targetTellerForVip != -1)
         {
-          // ä»åŸé˜Ÿåˆ—ä¸­ç§»é™¤ VIP
+          // ´ÓÔ­¶ÓÁĞÖĞÒÆ³ı VIP
           RemoveCustomerByID(&s->tstat[originalTeller], vipCustomerID);
 
           if (foundInterruptibleTeller)
           {
-            // æ‰§è¡Œä¸­æ–­é€»è¾‘
+            // Ö´ĞĞÖĞ¶ÏÂß¼­
             Event *interruptedCustomerEvent = &s->tstat[targetTellerForVip].timeline[s->tstat[targetTellerForVip].timelineCount - 1];
             int interruptedCustomerID = GetCustomerID(interruptedCustomerEvent);
             int originalInterruptedServiceTime = GetServiceTime(interruptedCustomerEvent);
-            int serviceStartTime = GetTime(interruptedCustomerEvent) - GetServiceTime(interruptedCustomerEvent); // ä¿®æ­£ä¸ºæœåŠ¡å¼€å§‹æ—¶é—´
+            int serviceStartTime = GetTime(interruptedCustomerEvent) - GetServiceTime(interruptedCustomerEvent); // ĞŞÕıÎª·şÎñ¿ªÊ¼Ê±¼ä
             int timeServedSoFar = GetTime(e) - serviceStartTime;
             int remainingServiceTime = originalInterruptedServiceTime - timeServedSoFar;
             if (remainingServiceTime < 0)
               remainingServiceTime = 0;
 
-            printf("æ—¶é—´: %2d\tä¼˜å…ˆ VIPå®¢æˆ· %d (æ¥è‡ªåŸå‡ºçº³å‘˜ %d) è½¬ç§»åˆ°å‡ºçº³å‘˜ %d å¹¶ä¸­æ–­æ™®é€šå®¢æˆ· %dã€‚å·²æœåŠ¡æ—¶é—´: %dï¼Œå‰©ä½™æœåŠ¡æ—¶é—´: %dã€‚\n",
+            printf("Ê±¼ä: %2d\tÓÅÏÈ VIP¿Í»§ %d (À´×ÔÔ­³öÄÉÔ± %d) ×ªÒÆµ½³öÄÉÔ± %d ²¢ÖĞ¶ÏÆÕÍ¨¿Í»§ %d¡£ÒÑ·şÎñÊ±¼ä: %d£¬Ê£Óà·şÎñÊ±¼ä: %d¡£\n",
                    GetTime(e), vipCustomerID, originalTeller, targetTellerForVip, interruptedCustomerID, timeServedSoFar, remainingServiceTime);
 
-            // ä¸­æ–­æœåŠ¡ï¼Œå‡ºçº³å‘˜ç«‹å³ç©ºé—²
+            // ÖĞ¶Ï·şÎñ£¬³öÄÉÔ±Á¢¼´¿ÕÏĞ
             s->tstat[targetTellerForVip].finishService = GetTime(e);
-            // ä¿®æ­£ï¼šä»æ€»æœåŠ¡æ—¶é—´ä¸­æ‰£é™¤æœªå®Œæˆçš„æœåŠ¡æ—¶é—´
+            // ĞŞÕı£º´Ó×Ü·şÎñÊ±¼äÖĞ¿Û³ıÎ´Íê³ÉµÄ·şÎñÊ±¼ä
             s->tstat[targetTellerForVip].totalService -= remainingServiceTime;
 
-            // å°†è¢«æ‰“æ–­çš„æ™®é€šå®¢æˆ·æ”¾å›é˜Ÿåˆ—å¤´éƒ¨
+            // ½«±»´ò¶ÏµÄÆÕÍ¨¿Í»§·Å»Ø¶ÓÁĞÍ·²¿
             Event interruptedCustomerRequeuedEvent;
             InitEvent(&interruptedCustomerRequeuedEvent, GetTime(e), arrival,
                       interruptedCustomerID, targetTellerForVip,
-                      GetWaitTime(interruptedCustomerEvent), // ä»…æºå¸¦åŸå§‹ç­‰å¾…æ—¶é—´
+                      GetWaitTime(interruptedCustomerEvent), // ½öĞ¯´øÔ­Ê¼µÈ´ıÊ±¼ä
                       originalInterruptedServiceTime, notVip);
             InsertVipIntoQueue(&s->tstat[targetTellerForVip], interruptedCustomerRequeuedEvent);
 
             s->totalCutInTime += remainingServiceTime;
           }
 
-          // æœåŠ¡ä¼˜å…ˆçš„ VIP
-          s->tstat[targetTellerForVip].totalCustomerWait += vipWaitedTime; // ä½¿ç”¨ç´¯ç§¯çš„ç­‰å¾…æ—¶é—´
+          // ·şÎñÓÅÏÈµÄ VIP
+          s->tstat[targetTellerForVip].totalCustomerWait += vipWaitedTime; // Ê¹ÓÃÀÛ»ıµÄµÈ´ıÊ±¼ä
           s->tstat[targetTellerForVip].totalCustomerCount++;
-          s->tstat[targetTellerForVip].totalService += vipServiceTime; // VIP åŸå§‹çš„æœåŠ¡æ—¶é—´
+          s->tstat[targetTellerForVip].totalService += vipServiceTime; // VIP Ô­Ê¼µÄ·şÎñÊ±¼ä
 
           int vipDepartureTime = GetTime(e) + vipServiceTime;
           s->tstat[targetTellerForVip].finishService = vipDepartureTime;
@@ -549,23 +549,23 @@ void RunSimulation(Simulation *s)
             s->tstat[targetTellerForVip].timeline[s->tstat[targetTellerForVip].timelineCount] = *newevent;
             s->tstat[targetTellerForVip].timelineCount++;
           }
-          printf("\tå‡ºçº³å‘˜ %d å¼€å§‹æœåŠ¡é«˜ä¼˜å…ˆçº§ VIP å®¢æˆ· %d\n", targetTellerForVip, vipCustomerID);
+          printf("\t³öÄÉÔ± %d ¿ªÊ¼·şÎñ¸ßÓÅÏÈ¼¶ VIP ¿Í»§ %d\n", targetTellerForVip, vipCustomerID);
         }
         else
         {
-          // æ²¡æœ‰æ‰¾åˆ°åˆé€‚çš„ç©ºé—²æˆ–å¯ä¸­æ–­çš„å‡ºçº³å‘˜ã€‚VIP ç•™åœ¨åŸé˜Ÿåˆ—ã€‚
-          printf("DEBUG: ä¼˜å…ˆ VIPå®¢æˆ· %d æ— æ³•è½¬ç§»åˆ°ç©ºé—²æˆ–å¯ä¸­æ–­çš„æŸœå‘˜ã€‚ç»§ç»­åœ¨åŸé˜Ÿåˆ—ç­‰å¾…ã€‚\n", vipCustomerID);
-          // æ­¤ VIP äº‹ä»¶å·²ä» vipPQueue ä¸­ç§»é™¤ï¼Œå®ƒå°†ç”±å…¶åŸå§‹é˜Ÿåˆ—åœ¨é€‚å½“æ—¶å€™å¤„ç†ã€‚
+          // Ã»ÓĞÕÒµ½ºÏÊÊµÄ¿ÕÏĞ»ò¿ÉÖĞ¶ÏµÄ³öÄÉÔ±¡£VIP ÁôÔÚÔ­¶ÓÁĞ¡£
+          printf("DEBUG: ÓÅÏÈ VIP¿Í»§ %d ÎŞ·¨×ªÒÆµ½¿ÕÏĞ»ò¿ÉÖĞ¶ÏµÄ¹ñÔ±¡£¼ÌĞøÔÚÔ­¶ÓÁĞµÈ´ı¡£\n", vipCustomerID);
+          // ´Ë VIP ÊÂ¼şÒÑ´Ó vipPQueue ÖĞÒÆ³ı£¬Ëü½«ÓÉÆäÔ­Ê¼¶ÓÁĞÔÚÊÊµ±Ê±ºò´¦Àí¡£
         }
       }
 
-      // å¦‚æœæ²¡æœ‰é«˜ä¼˜å…ˆçº§ VIP å®¢æˆ·å¾—åˆ°æœåŠ¡ï¼Œæˆ–è€…è¯¥ VIP æ— æ³•è½¬ç§»ï¼Œ
-      // åˆ™ç»§ç»­æœåŠ¡å½“å‰å‡ºçº³å‘˜é˜Ÿåˆ—ä¸­çš„ä¸‹ä¸€ä¸ªå®¢æˆ·ã€‚
+      // Èç¹ûÃ»ÓĞ¸ßÓÅÏÈ¼¶ VIP ¿Í»§µÃµ½·şÎñ£¬»òÕß¸Ã VIP ÎŞ·¨×ªÒÆ£¬
+      // Ôò¼ÌĞø·şÎñµ±Ç°³öÄÉÔ±¶ÓÁĞÖĞµÄÏÂÒ»¸ö¿Í»§¡£
       if (!IsTellerQueueEmpty(&s->tstat[tellerID]))
       {
-        printf("DEBUG: å‡ºçº³å‘˜ %d é˜Ÿåˆ—ä¸ä¸ºç©ºã€‚å¤„ç†ä¸‹ä¸€ä¸ªå®¢æˆ·ã€‚\n", tellerID);
+        printf("DEBUG: ³öÄÉÔ± %d ¶ÓÁĞ²»Îª¿Õ¡£´¦ÀíÏÂÒ»¸ö¿Í»§¡£\n", tellerID);
         Event nextCustomerInLine = DequeueCustomer(&s->tstat[tellerID]);
-        // ä¿®æ­£ï¼šä»äº‹ä»¶ä¸­è·å–æœåŠ¡æ—¶é—´ï¼Œè€Œä¸æ˜¯é‡æ–°ç”Ÿæˆ
+        // ĞŞÕı£º´ÓÊÂ¼şÖĞ»ñÈ¡·şÎñÊ±¼ä£¬¶ø²»ÊÇÖØĞÂÉú³É
         int serviceTimeForNext = GetServiceTime(&nextCustomerInLine);
 
         printf("DEBUG: Dequeued C%d from T%d. Post-dequeue Queue: Head:%d, Tail:%d, Count:%d\n",
@@ -574,23 +574,23 @@ void RunSimulation(Simulation *s)
                (s->tstat[tellerID].customerQueueTail ? GetCustomerID(&s->tstat[tellerID].customerQueueTail->customerEvent) : 0),
                s->tstat[tellerID].queueCount);
 
-        int waitTimeForNext = GetTime(e) - GetTime(&nextCustomerInLine); // å½“å‰æ—¶é—´ - å®¢æˆ·é‡æ–°å…¥é˜Ÿæ—¶é—´
+        int waitTimeForNext = GetTime(e) - GetTime(&nextCustomerInLine); // µ±Ç°Ê±¼ä - ¿Í»§ÖØĞÂÈë¶ÓÊ±¼ä
         if (waitTimeForNext < 0)
           waitTimeForNext = 0;
 
-        // ç´¯ç§¯è¯¥å®¢æˆ·çš„æ€»ç­‰å¾…æ—¶é—´ï¼šä¹‹å‰ç´¯ç§¯çš„ç­‰å¾…æ—¶é—´ + é‡æ–°æ’é˜Ÿåçš„ç­‰å¾…æ—¶é—´
+        // ÀÛ»ı¸Ã¿Í»§µÄ×ÜµÈ´ıÊ±¼ä£ºÖ®Ç°ÀÛ»ıµÄµÈ´ıÊ±¼ä + ÖØĞÂÅÅ¶ÓºóµÄµÈ´ıÊ±¼ä
         int totalCustomerAccumulatedWait = GetWaitTime(&nextCustomerInLine) + waitTimeForNext;
 
         s->tstat[tellerID].totalCustomerWait += totalCustomerAccumulatedWait;
         s->tstat[tellerID].totalCustomerCount++;
-        s->tstat[tellerID].totalService += serviceTimeForNext; // ä½¿ç”¨æœ¬æ¬¡æœåŠ¡æ—¶é—´
+        s->tstat[tellerID].totalService += serviceTimeForNext; // Ê¹ÓÃ±¾´Î·şÎñÊ±¼ä
 
         int nextCustomerDepartureTime = GetTime(e) + serviceTimeForNext;
         s->tstat[tellerID].finishService = nextCustomerDepartureTime;
 
         InitEvent(newevent, nextCustomerDepartureTime,
                   departure, GetCustomerID(&nextCustomerInLine), tellerID,
-                  totalCustomerAccumulatedWait, serviceTimeForNext, GetCustomerType(&nextCustomerInLine)); // ä½¿ç”¨ç´¯ç§¯ç­‰å¾…æ—¶é—´
+                  totalCustomerAccumulatedWait, serviceTimeForNext, GetCustomerType(&nextCustomerInLine)); // Ê¹ÓÃÀÛ»ıµÈ´ıÊ±¼ä
         PQInsert(&(s->pq), *newevent);
 
         if (s->tstat[tellerID].timelineCount < MaxPQSize)
@@ -598,17 +598,17 @@ void RunSimulation(Simulation *s)
           s->tstat[tellerID].timeline[s->tstat[tellerID].timelineCount] = *newevent;
           s->tstat[tellerID].timelineCount++;
         }
-        printf("\tå‡ºçº³å‘˜ %d å¼€å§‹æœåŠ¡æ’é˜Ÿçš„ %så®¢æˆ· %d\n", tellerID, (GetCustomerType(&nextCustomerInLine) == Vip) ? "VIP" : "æ™®é€š", GetCustomerID(&nextCustomerInLine));
+        printf("\t³öÄÉÔ± %d ¿ªÊ¼·şÎñÅÅ¶ÓµÄ %s¿Í»§ %d\n", tellerID, (GetCustomerType(&nextCustomerInLine) == Vip) ? "VIP" : "ÆÕÍ¨", GetCustomerID(&nextCustomerInLine));
       }
       else
       {
-        printf("DEBUG: å‡ºçº³å‘˜ %d é˜Ÿåˆ—ä¸ºç©ºã€‚å‡ºçº³å‘˜å˜ä¸ºç©ºé—²ã€‚\n", tellerID);
+        printf("DEBUG: ³öÄÉÔ± %d ¶ÓÁĞÎª¿Õ¡£³öÄÉÔ±±äÎª¿ÕÏĞ¡£\n", tellerID);
         s->tstat[tellerID].finishService = GetTime(e);
       }
     }
   }
 
-  // ç¡®ä¿ simulationLength åæ˜ äº†å®é™…çš„æœ€åä¸€ä¸ªäº‹ä»¶æ—¶é—´ï¼ˆå¦‚æœå®ƒè¶…å‡ºäº†åˆå§‹é•¿åº¦ï¼‰
+  // È·±£ simulationLength ·´Ó³ÁËÊµ¼ÊµÄ×îºóÒ»¸öÊÂ¼şÊ±¼ä£¨Èç¹ûËü³¬³öÁË³õÊ¼³¤¶È£©
   if (GetTime(e) > s->simulationLength)
   {
     s->simulationLength = GetTime(e);
@@ -618,7 +618,7 @@ void RunSimulation(Simulation *s)
   free(newevent);
 }
 
-// æ‰“å°æ¨¡æ‹Ÿç»“æœ
+// ´òÓ¡Ä£Äâ½á¹û
 void PrintSimulationResults(Simulation *s)
 {
   int cumCustomers = 0, cumWait = 0, i, j;
@@ -626,69 +626,69 @@ void PrintSimulationResults(Simulation *s)
   float tellerWork;
   int tellerWorkPercent;
 
-  // è®¡ç®—ç´¯ç§¯ç»Ÿè®¡æ•°æ®
+  // ¼ÆËãÀÛ»ıÍ³¼ÆÊı¾İ
   for (i = 1; i <= s->numTellers; i++)
   {
     cumCustomers += s->tstat[i].totalCustomerCount;
     cumWait += s->tstat[i].totalCustomerWait;
   }
 
-  // è®¡ç®—æ€»å‡ºçº³å‘˜ç©ºé—²æ—¶é—´
+  // ¼ÆËã×Ü³öÄÉÔ±¿ÕÏĞÊ±¼ä
   for (i = 1; i <= s->numTellers; i++)
   {
     s->totalTellerIdleTime += (s->simulationLength - s->tstat[i].totalService);
   }
 
   printf("\n");
-  printf("******** æ¨¡æ‹Ÿç»“æœæ€»ç»“ ********\n");
-  printf("æ¨¡æ‹Ÿæ—¶é—´ï¼š%d åˆ†é’Ÿ\n", s->simulationLength);
-  printf("\tå®¢æˆ·æ€»æ•°ï¼š%d\n", cumCustomers);
-  printf("\tå¹³å‡å®¢æˆ·ç­‰å¾…æ—¶é—´ï¼š");
+  printf("******** Ä£Äâ½á¹û×Ü½á ********\n");
+  printf("Ä£ÄâÊ±¼ä£º%d ·ÖÖÓ\n", s->simulationLength);
+  printf("\t¿Í»§×ÜÊı£º%d\n", cumCustomers);
+  printf("\tÆ½¾ù¿Í»§µÈ´ıÊ±¼ä£º");
 
-  // è®¡ç®—å¹³å‡å®¢æˆ·ç­‰å¾…æ—¶é—´
+  // ¼ÆËãÆ½¾ù¿Í»§µÈ´ıÊ±¼ä
   avgCustWait = (cumCustomers > 0) ? (int)((float)cumWait / cumCustomers + 0.5) : 0;
-  printf("%d åˆ†é’Ÿ\n", avgCustWait);
+  printf("%d ·ÖÖÓ\n", avgCustWait);
 
-  // æ‰“å°å‡ºçº³å‘˜ç‰¹å®šç»Ÿè®¡æ•°æ®å’Œæ—¶é—´çº¿
+  // ´òÓ¡³öÄÉÔ±ÌØ¶¨Í³¼ÆÊı¾İºÍÊ±¼äÏß
   for (i = 1; i <= s->numTellers; i++)
   {
-    printf("\tå‡ºçº³å‘˜ #%d\tå·¥ä½œç™¾åˆ†æ¯” ", i);
-    // ç¡®ä¿ simulationLength ä¸ºæ­£ï¼Œé¿å…é™¤ä»¥é›¶
+    printf("\t³öÄÉÔ± #%d\t¹¤×÷°Ù·Ö±È ", i);
+    // È·±£ simulationLength ÎªÕı£¬±ÜÃâ³ıÒÔÁã
     tellerWork = (s->simulationLength > 0) ? (float)(s->tstat[i].totalService) / s->simulationLength : 0.0;
     tellerWorkPercent = (int)(tellerWork * 100.0 + 0.5);
     printf("%d%%\n", tellerWorkPercent);
 
-    printf("\tå‡ºçº³å‘˜ #%d æ—¶é—´çº¿ï¼š\n", i);
-    // éå†æ¯ä¸ªå‡ºçº³å‘˜çš„äº‹ä»¶æ—¶é—´çº¿
+    printf("\t³öÄÉÔ± #%d Ê±¼äÏß£º\n", i);
+    // ±éÀúÃ¿¸ö³öÄÉÔ±µÄÊÂ¼şÊ±¼äÏß
     for (j = 0; j < s->tstat[i].timelineCount; j++)
     {
       Event *te = &s->tstat[i].timeline[j];
       int iv = GetCustomerType(te);
       int waitTime = GetWaitTime(te);
-      printf("\t\tæ—¶é—´ %2dï¼š%så®¢æˆ· %dï¼ŒæœåŠ¡æ—¶é—´ %dï¼Œç­‰å¾…æ—¶é—´ %d\n",
-             GetTime(te), (iv == Vip) ? "VIP" : "æ™®é€š",
+      printf("\t\tÊ±¼ä %2d£º%s¿Í»§ %d£¬·şÎñÊ±¼ä %d£¬µÈ´ıÊ±¼ä %d\n",
+             GetTime(te), (iv == Vip) ? "VIP" : "ÆÕÍ¨",
              GetCustomerID(te), GetServiceTime(te), waitTime);
     }
   }
   printf("\n");
-  printf("VIPå®¢æˆ·å¹³å‡ç­‰å¾…æ—¶é—´ï¼š%f åˆ†é’Ÿ\n", (s->totalVipCustomerCount > 0) ? (float)s->totalVipWaitTime / s->totalVipCustomerCount : 0.0);
-  printf("å‡ºçº³å‘˜å¹³å‡ç©ºé—²æ—¶é—´ï¼š%f åˆ†é’Ÿ\n", (s->numTellers > 0) ? (float)s->totalTellerIdleTime / s->numTellers : 0.0);
-  printf("æ™®é€šç”¨æˆ·è¢«æ’é˜Ÿæ‰€å¹³å‡å¤šå‡ºçš„ç­‰å¾…æ—¶é—´ï¼š%f åˆ†é’Ÿ\n", (s->totalOrdinaryCustomerCount > 0) ? (float)s->totalCutInTime / s->totalOrdinaryCustomerCount : 0.0);
+  printf("VIP¿Í»§Æ½¾ùµÈ´ıÊ±¼ä£º%f ·ÖÖÓ\n", (s->totalVipCustomerCount > 0) ? (float)s->totalVipWaitTime / s->totalVipCustomerCount : 0.0);
+  printf("³öÄÉÔ±Æ½¾ù¿ÕÏĞÊ±¼ä£º%f ·ÖÖÓ\n", (s->numTellers > 0) ? (float)s->totalTellerIdleTime / s->numTellers : 0.0);
+  printf("ÆÕÍ¨ÓÃ»§±»²å¶ÓËùÆ½¾ù¶à³öµÄµÈ´ıÊ±¼ä£º%f ·ÖÖÓ\n", (s->totalOrdinaryCustomerCount > 0) ? (float)s->totalCutInTime / s->totalOrdinaryCustomerCount : 0.0);
 }
 
-// æ–°å¢å‡ºçº³å‘˜é˜Ÿåˆ—ï¼ˆé“¾è¡¨ï¼‰çš„è¾…åŠ©å‡½æ•°
+// ĞÂÔö³öÄÉÔ±¶ÓÁĞ£¨Á´±í£©µÄ¸¨Öúº¯Êı
 void EnqueueCustomer(TellerStats *ts, Event customerEvent)
 {
   Node *newNode = (Node *)malloc(sizeof(Node));
   if (newNode == NULL)
   {
-    fprintf(stderr, "é”™è¯¯ï¼šä¸ºæ–°èŠ‚ç‚¹åˆ†é…å†…å­˜å¤±è´¥ã€‚\n");
+    fprintf(stderr, "´íÎó£ºÎªĞÂ½Úµã·ÖÅäÄÚ´æÊ§°Ü¡£\n");
     return;
   }
   newNode->customerEvent = customerEvent;
   newNode->next = NULL;
 
-  if (ts->customerQueueTail == NULL) // é˜Ÿåˆ—ä¸ºç©º
+  if (ts->customerQueueTail == NULL) // ¶ÓÁĞÎª¿Õ
   {
     ts->customerQueueHead = newNode;
     ts->customerQueueTail = newNode;
@@ -705,9 +705,9 @@ Event DequeueCustomer(TellerStats *ts)
 {
   if (ts->customerQueueHead == NULL)
   {
-    fprintf(stderr, "é”™è¯¯ï¼šä»ç©ºçš„å‡ºçº³å‘˜é˜Ÿåˆ—ä¸­å‡ºé˜Ÿã€‚\n");
+    fprintf(stderr, "´íÎó£º´Ó¿ÕµÄ³öÄÉÔ±¶ÓÁĞÖĞ³ö¶Ó¡£\n");
     Event emptyEvent;
-    InitEvent(&emptyEvent, -1, arrival, -1, -1, -1, -1, notVip); // æŒ‡ç¤ºé”™è¯¯
+    InitEvent(&emptyEvent, -1, arrival, -1, -1, -1, -1, notVip); // Ö¸Ê¾´íÎó
     return emptyEvent;
   }
 
@@ -715,7 +715,7 @@ Event DequeueCustomer(TellerStats *ts)
   Event customer = temp->customerEvent;
   ts->customerQueueHead = ts->customerQueueHead->next;
 
-  if (ts->customerQueueHead == NULL) // æœ€åä¸€ä¸ªå…ƒç´ å‡ºé˜Ÿ
+  if (ts->customerQueueHead == NULL) // ×îºóÒ»¸öÔªËØ³ö¶Ó
   {
     ts->customerQueueTail = NULL;
   }
@@ -728,7 +728,7 @@ Event PeekCustomer(TellerStats *ts)
 {
   if (ts->customerQueueHead == NULL)
   {
-    fprintf(stderr, "é”™è¯¯ï¼šä»ç©ºçš„å‡ºçº³å‘˜é˜Ÿåˆ—ä¸­çª¥è§†ã€‚\n");
+    fprintf(stderr, "´íÎó£º´Ó¿ÕµÄ³öÄÉÔ±¶ÓÁĞÖĞ¿úÊÓ¡£\n");
     Event emptyEvent;
     InitEvent(&emptyEvent, -1, arrival, -1, -1, -1, -1, notVip);
     return emptyEvent;
@@ -741,33 +741,33 @@ int IsTellerQueueEmpty(TellerStats *ts)
   return ts->customerQueueHead == NULL;
 }
 
-// ä¿®æ”¹ï¼šè¯¥å‡½æ•°ç°åœ¨ç”¨äºå°†å®¢æˆ·æ’å…¥é˜Ÿåˆ—å¤´éƒ¨ (ä¾‹å¦‚ï¼Œè¢«æ‰“æ–­çš„æ™®é€šå®¢æˆ·)
+// ĞŞ¸Ä£º¸Ãº¯ÊıÏÖÔÚÓÃÓÚ½«¿Í»§²åÈë¶ÓÁĞÍ·²¿ (ÀıÈç£¬±»´ò¶ÏµÄÆÕÍ¨¿Í»§)
 void InsertVipIntoQueue(TellerStats *ts, Event customerEvent)
 {
   Node *newNode = (Node *)malloc(sizeof(Node));
   if (newNode == NULL)
   {
-    fprintf(stderr, "é”™è¯¯ï¼šä¸ºæ–°èŠ‚ç‚¹åˆ†é…å†…å­˜å¤±è´¥ã€‚\n");
+    fprintf(stderr, "´íÎó£ºÎªĞÂ½Úµã·ÖÅäÄÚ´æÊ§°Ü¡£\n");
     return;
   }
   newNode->customerEvent = customerEvent;
   newNode->next = NULL;
 
-  if (ts->customerQueueHead == NULL) // é˜Ÿåˆ—ä¸ºç©º
+  if (ts->customerQueueHead == NULL) // ¶ÓÁĞÎª¿Õ
   {
     ts->customerQueueHead = newNode;
     ts->customerQueueTail = newNode;
   }
   else
   {
-    // æ’å…¥é˜Ÿåˆ—å¤´éƒ¨
+    // ²åÈë¶ÓÁĞÍ·²¿
     newNode->next = ts->customerQueueHead;
     ts->customerQueueHead = newNode;
   }
   ts->queueCount++;
 }
 
-// ä»å‡ºçº³å‘˜é˜Ÿåˆ—ä¸­æŒ‰ ID ç§»é™¤å®¢æˆ·
+// ´Ó³öÄÉÔ±¶ÓÁĞÖĞ°´ ID ÒÆ³ı¿Í»§
 void RemoveCustomerByID(TellerStats *ts, int customerID)
 {
   Node *current = ts->customerQueueHead;
@@ -781,37 +781,37 @@ void RemoveCustomerByID(TellerStats *ts, int customerID)
 
   if (current == NULL)
   {
-    // å®¢æˆ·æœªåœ¨æ­¤é˜Ÿåˆ—ä¸­æ‰¾åˆ°ï¼Œæ— éœ€æ“ä½œ
+    // ¿Í»§Î´ÔÚ´Ë¶ÓÁĞÖĞÕÒµ½£¬ÎŞĞè²Ù×÷
     return;
   }
 
   if (prev == NULL)
   {
-    // ç§»é™¤å¤´éƒ¨èŠ‚ç‚¹
+    // ÒÆ³ıÍ·²¿½Úµã
     ts->customerQueueHead = current->next;
   }
   else
   {
-    // ç§»é™¤ä¸­é—´æˆ–å°¾éƒ¨èŠ‚ç‚¹
+    // ÒÆ³ıÖĞ¼ä»òÎ²²¿½Úµã
     prev->next = current->next;
   }
 
   if (current == ts->customerQueueTail)
   {
-    // å¦‚æœç§»é™¤çš„èŠ‚ç‚¹æ˜¯å°¾éƒ¨ï¼Œæ›´æ–°å°¾éƒ¨
+    // Èç¹ûÒÆ³ıµÄ½ÚµãÊÇÎ²²¿£¬¸üĞÂÎ²²¿
     ts->customerQueueTail = prev;
   }
 
   free(current);
   ts->queueCount--;
-  // å¦‚æœç§»é™¤åé˜Ÿåˆ—å˜ç©ºï¼Œç¡®ä¿å°¾éƒ¨ä¸º NULL
+  // Èç¹ûÒÆ³ıºó¶ÓÁĞ±ä¿Õ£¬È·±£Î²²¿Îª NULL
   if (ts->customerQueueHead == NULL)
   {
     ts->customerQueueTail = NULL;
   }
 }
 
-// æ ¹æ® customerID æŸ¥æ‰¾å…¶æœåŠ¡æ—¶é—´
+// ¸ù¾İ customerID ²éÕÒÆä·şÎñÊ±¼ä
 int GetServiceTimeByCustomerID(TellerStats *ts, int customerID)
 {
   Node *curr = ts->customerQueueHead;
@@ -823,7 +823,7 @@ int GetServiceTimeByCustomerID(TellerStats *ts, int customerID)
     }
     curr = curr->next;
   }
-  return 0; // æœªæ‰¾åˆ°ï¼Œè¿”å› 0
+  return 0; // Î´ÕÒµ½£¬·µ»Ø 0
 }
 
 #endif /* SIMULATION */
