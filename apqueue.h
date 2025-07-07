@@ -24,6 +24,7 @@ void ClearPQ(PQueue *pq);
 int PQEmpty(PQueue *pq);
 int PQFull(PQueue *pq);
 int PQLength(PQueue *pq);
+void DeletePQueueByID(PQueue *pq, int customerID);
 
 /* initialize priority queue count*/
 void InitPQueue(PQueue *pq)
@@ -100,6 +101,24 @@ int PQFull(PQueue *pq)
 void ClearPQ(PQueue *pq)
 {
 	pq->count = 0;
+}
+
+void DeletePQueueByID(PQueue *pq, int customerID)
+{
+    for (int i = 0; i < pq->count; i++)
+    {
+        if (GetCustomerID(&pq->pqlist[i]) == customerID)
+        {
+            // Shift elements to the left to remove the element
+            for (int j = i; j < pq->count - 1; j++)
+            {
+                pq->pqlist[j] = pq->pqlist[j + 1];
+            }
+            pq->count--;
+            return;
+        }
+    }
+    printf("Customer ID %d not found in priority queue.\n", customerID);
 }
 
 #endif  /* PRIORITYQUEUE */

@@ -80,7 +80,7 @@ void RemoveCustomerByID(TellerStats *ts, int customerID); // 用于 VIP 客户换队列
 // 生成随机 VIP 状态（五分之一的几率是 VIP）
 isVip GenerateRandomVipStatus(void)
 {
-  return (rand() % 5 == 0) ? Vip : notVip;
+  return (rand() % 2 == 0) ? Vip : notVip;
 }
 
 // 初始化模拟参数和数据结构
@@ -163,6 +163,10 @@ int NextAvailableTeller(Simulation *s, isVip iv, int currentTime)
   {
     if (s->tstat[i].finishService <= currentTime && IsTellerQueueEmpty(&s->tstat[i]))
     {
+      if(iv == notVip && i <= VIP_WINDOWS)
+      {
+        continue; // 如果是普通客户，1号出纳员（VIP 窗口）不考虑
+      }
       return i; // 找到一个空闲出纳员，立即返回
     }
   }
@@ -189,7 +193,7 @@ int NextAvailableTeller(Simulation *s, isVip iv, int currentTime)
   }
   else // 普通客户：寻找队列最短的出纳员
   {
-    for (int i = 1; i <= s->numTellers; i++)
+    for (int i = VIP_WINDOWS + 1; i <= s->numTellers; i++)
     {
       if (s->tstat[i].queueCount < minQueueCount)
       {
@@ -293,7 +297,9 @@ void RunSimulation(Simulation *s)
 
             printf("时间: %2d\tVIP客户 %d 插队到出纳员 %d。普通客户 %d 被打断。已服务时间: %d，剩余服务时间: %d。\n",
                    GetTime(e), GetCustomerID(e), tellerID, interruptedCustomerID, timeServedSoFar, remainingServiceTime);
-
+            
+            // 删除被打断的普通客户离开事件
+            DeletePQueueByID(&s->pq, interruptedCustomerID);
             // 1. 中断服务：出纳员立即空闲
             s->tstat[tellerID].finishService = GetTime(e);
             // 修正：从总服务时间中扣除未完成的服务时间
