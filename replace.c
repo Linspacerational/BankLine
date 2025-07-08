@@ -11,7 +11,7 @@ typedef Event DataType; // PQueue uses Event as its DataType
 #define MAXCUSTLENGTH 1000
 #define MAXTELLERLENGTH 11
 
-int VIP_WINDOWS = 0;
+int VIP_WINDOWS = 1;
 
 // Define a Node structure for the linked list
 struct Node
@@ -50,12 +50,12 @@ struct simulation
   isVip ivs[MAXCUSTLENGTH]; // Predefined VIP statuses
   int ivsIndex;
 
-  // ºâÁ¿»úÖÆÐÔÄÜµÄÖ¸±ê
-  int totalCutInTime;             // ¼ÇÂ¼²å¶Ó´ÎÊý
-  int totalVipWaitTime;           // ¼ÇÂ¼ËùÓÐVIP¿Í»§µÄ×ÜµÈ´ýÊ±¼ä
-  int totalTellerIdleTime;        // ¼ÇÂ¼ËùÓÐ³öÄÉÔ±µÄ×Ü¿ÕÏÐÊ±¼ä
-  int totalVipCustomerCount;      // NEW: ¼ÇÂ¼×ÜVIP¿Í»§ÊýÁ¿
-  int totalOrdinaryCustomerCount; // NEW: ¼ÇÂ¼×ÜÆÕÍ¨¿Í»§ÊýÁ¿
+  // è¡¡é‡æœºåˆ¶æ€§èƒ½çš„æŒ‡æ ‡
+  int totalCutInTime;             // è®°å½•æ’é˜Ÿæ¬¡æ•°
+  int totalVipWaitTime;           // è®°å½•æ‰€æœ‰VIPå®¢æˆ·çš„æ€»ç­‰å¾…æ—¶é—´
+  int totalTellerIdleTime;        // è®°å½•æ‰€æœ‰å‡ºçº³å‘˜çš„æ€»ç©ºé—²æ—¶é—´
+  int totalVipCustomerCount;      // NEW: è®°å½•æ€»VIPå®¢æˆ·æ•°é‡
+  int totalOrdinaryCustomerCount; // NEW: è®°å½•æ€»æ™®é€šå®¢æˆ·æ•°é‡
 };
 typedef struct simulation Simulation;
 
@@ -119,13 +119,13 @@ void InitSimulation(Simulation *s)
   }
 
   // Prompt user for simulation parameters
-  printf("ÊäÈëÄ£ÄâÊ±¼ä£¨·ÖÖÓ£©£º");
+  printf("è¾“å…¥æ¨¡æ‹Ÿæ—¶é—´ï¼ˆåˆ†é’Ÿï¼‰ï¼š");
   scanf("%d", &s->simulationLength);
-  printf("ÊäÈë³öÄÉÔ±ÊýÁ¿£º");
+  printf("è¾“å…¥å‡ºçº³å‘˜æ•°é‡ï¼š");
   scanf("%d", &s->numTellers); // Assuming numTellers is now read as a single integer
-  printf("ÊäÈëµ½´ïÊ±¼ä·¶Î§£¨·ÖÖÓ£©£º");
+  printf("è¾“å…¥åˆ°è¾¾æ—¶é—´èŒƒå›´ï¼ˆåˆ†é’Ÿï¼‰ï¼š");
   scanf("%d%d", &s->arrivalLow, &s->arrivalHigh);
-  printf("ÊäÈë·þÎñÊ±¼ä·¶Î§£¨·ÖÖÓ£©£º");
+  printf("è¾“å…¥æœåŠ¡æ—¶é—´èŒƒå›´ï¼ˆåˆ†é’Ÿï¼‰ï¼š");
   scanf("%d%d", &s->serviceLow, &s->serviceHigh);
   printf("Enter the longest waitting time the customer can tolerate in minutes: ");
   scanf("%d", &s->waitHigh); // User provides the VIP wait tolerance here
@@ -185,23 +185,8 @@ int NextAvailableTeller(Simulation *s, isVip iv, int currentTime)
 
     if (numBusyRegularTellers > 0)
     {
-      for (int i = 0; i < numBusyRegularTellers; i++)
-      {
-        if (s->tstat[busyRegularTellers[i]].queueCount < minQueueCount)
-        {
-          minQueueCount = s->tstat[busyRegularTellers[i]].queueCount;
-          bestTellerID = busyRegularTellers[i];
-          minFinishTime = s->tstat[i].finishService;
-        }
-        else if (s->tstat[i].queueCount == minQueueCount)
-        {
-          if (s->tstat[i].finishService < minFinishTime)
-          {
-            minFinishTime = s->tstat[busyRegularTellers[i]].finishService;
-            bestTellerID = busyRegularTellers[i];
-          }
-        }
-      }
+      // Randomly select one busy regular teller
+      return busyRegularTellers[rand() % numBusyRegularTellers];
     }
     else
     {
@@ -214,7 +199,6 @@ int NextAvailableTeller(Simulation *s, isVip iv, int currentTime)
       else
         return -1; // No tellers available, should not happen in a valid simulation
     }
-    return bestTellerID; // Return the best teller found for VIP
   }
   else // notVip (Ordinary Customer)
   {
@@ -291,7 +275,7 @@ void RunSimulation(Simulation *s)
 
     if (GetEventType(e) == arrival)
     {
-      printf("Ê±¼ä: %2d\t%s¿Í»§ %d µ½´ï\n", GetTime(e), (GetCustomerType(e) == Vip) ? "VIP" : "ÆÕÍ¨", GetCustomerID(e));
+      printf("æ—¶é—´: %2d\t%så®¢æˆ· %d åˆ°è¾¾\n", GetTime(e), (GetCustomerType(e) == Vip) ? "VIP" : "æ™®é€š", GetCustomerID(e));
 
       // Schedule the next arrival if within simulation limits and predefined VIP list limits
       nexttime = GetTime(e) + NextArrivalTime(s);
@@ -307,7 +291,7 @@ void RunSimulation(Simulation *s)
       tellerID = NextAvailableTeller(s, iv, GetTime(e));
 
       // DEBUG print: Show decision parameters
-      printf("DEBUG: ¿Í»§ %d (VIP: %d) µ½´ïÊ±¼ä %d. Ñ¡ÔñµÄ³öÄÉÔ±: %d. ³öÄÉÔ± %d Ô¤¼Æ¿ÕÏÐÊ±¼ä: %d. ³öÄÉÔ± %d ¶ÓÁÐÊÇ·ñÎª¿Õ: %d. (µ±Ç°¶ÓÁÐ³¤¶È: %d)\n",
+      printf("DEBUG: å®¢æˆ· %d (VIP: %d) åˆ°è¾¾æ—¶é—´ %d. é€‰æ‹©çš„å‡ºçº³å‘˜: %d. å‡ºçº³å‘˜ %d é¢„è®¡ç©ºé—²æ—¶é—´: %d. å‡ºçº³å‘˜ %d é˜Ÿåˆ—æ˜¯å¦ä¸ºç©º: %d. (å½“å‰é˜Ÿåˆ—é•¿åº¦: %d)\n",
              GetCustomerID(e), iv, GetTime(e), tellerID, tellerID, s->tstat[tellerID].finishService, tellerID, IsTellerQueueEmpty(&s->tstat[tellerID]), s->tstat[tellerID].queueCount);
 
       // Handle customer queuing and service
@@ -332,7 +316,7 @@ void RunSimulation(Simulation *s)
           s->tstat[tellerID].timeline[s->tstat[tellerID].timelineCount] = *newevent;
           s->tstat[tellerID].timelineCount++;
         }
-        printf("\t³öÄÉÔ± %d\tµÈ´ýÊ±¼ä %d\t·þÎñÊ±¼ä %d (Á¢¼´·þÎñ)\n", tellerID, waittime, servicetime);
+        printf("\tå‡ºçº³å‘˜ %d\tç­‰å¾…æ—¶é—´ %d\tæœåŠ¡æ—¶é—´ %d (ç«‹å³æœåŠ¡)\n", tellerID, waittime, servicetime);
       }
       else // Teller is busy or has a queue, customer needs to wait
       {
@@ -346,7 +330,7 @@ void RunSimulation(Simulation *s)
               s->totalCutInTime += servicetime; // Increment cut-in time for non-VIPs
             current = current->next;
           }
-          printf("\tVIP¿Í»§ %d ÔÚ³öÄÉÔ± %d ÅÅ¶Ó (²å¶Ó). ¶ÓÁÐÍ·: %d, ¶ÓÁÐÎ²: %d, µ±Ç°¶ÓÁÐ³¤¶È: %d\n",
+          printf("\tVIPå®¢æˆ· %d åœ¨å‡ºçº³å‘˜ %d æŽ’é˜Ÿ (æ’é˜Ÿ). é˜Ÿåˆ—å¤´: %d, é˜Ÿåˆ—å°¾: %d, å½“å‰é˜Ÿåˆ—é•¿åº¦: %d\n",
                  GetCustomerID(e), tellerID,
                  (s->tstat[tellerID].customerQueueHead ? GetCustomerID(&s->tstat[tellerID].customerQueueHead->customerEvent) : 0),
                  (s->tstat[tellerID].customerQueueTail ? GetCustomerID(&s->tstat[tellerID].customerQueueTail->customerEvent) : 0),
@@ -356,7 +340,7 @@ void RunSimulation(Simulation *s)
         {
           // Normal enqueue (for non-VIPs, or VIPs going to VIP teller)
           EnqueueCustomer(&s->tstat[tellerID], *e);
-          printf("\t¿Í»§ %d ÔÚ³öÄÉÔ± %d ÅÅ¶Ó (Õý³£Èë¶Ó). ¶ÓÁÐÍ·: %d, ¶ÓÁÐÎ²: %d, µ±Ç°¶ÓÁÐ³¤¶È: %d\n",
+          printf("\tå®¢æˆ· %d åœ¨å‡ºçº³å‘˜ %d æŽ’é˜Ÿ (æ­£å¸¸å…¥é˜Ÿ). é˜Ÿåˆ—å¤´: %d, é˜Ÿåˆ—å°¾: %d, å½“å‰é˜Ÿåˆ—é•¿åº¦: %d\n",
                  GetCustomerID(e), tellerID,
                  (s->tstat[tellerID].customerQueueHead ? GetCustomerID(&s->tstat[tellerID].customerQueueHead->customerEvent) : 0),
                  (s->tstat[tellerID].customerQueueTail ? GetCustomerID(&s->tstat[tellerID].customerQueueTail->customerEvent) : 0),
@@ -366,17 +350,17 @@ void RunSimulation(Simulation *s)
     }
     else // GetEventType(e) == departure
     {
-      // NEW: Ôö¼Ó¿Í»§ÀàÐÍ¼ÆÊý
+      // NEW: å¢žåŠ å®¢æˆ·ç±»åž‹è®¡æ•°
       if (GetCustomerType(e) == Vip)
         s->totalVipCustomerCount++;
       else
         s->totalOrdinaryCustomerCount++;
 
-      printf("Ê±¼ä: %2d\t%s¿Í»§ %d Àë¿ª\n", GetTime(e), (GetCustomerType(e) == Vip) ? "VIP" : "ÆÕÍ¨", GetCustomerID(e));
-      printf("\t³öÄÉÔ± %d\tµÈ´ýÊ±¼ä %d\t·þÎñÊ±¼ä %d\n", GetTellerID(e), GetWaitTime(e), GetServiceTime(e));
+      printf("æ—¶é—´: %2d\t%så®¢æˆ· %d ç¦»å¼€\n", GetTime(e), (GetCustomerType(e) == Vip) ? "VIP" : "æ™®é€š", GetCustomerID(e));
+      printf("\tå‡ºçº³å‘˜ %d\tç­‰å¾…æ—¶é—´ %d\tæœåŠ¡æ—¶é—´ %d\n", GetTellerID(e), GetWaitTime(e), GetServiceTime(e));
       tellerID = GetTellerID(e);
 
-      printf("DEBUG: ³öÄÉÔ± %d Àë¿ªÊ±¼ä %d. ¶ÓÁÐÊÇ·ñÎª¿Õ: %d. (µ±Ç°¶ÓÁÐ³¤¶È: %d)\n", tellerID, GetTime(e), IsTellerQueueEmpty(&s->tstat[tellerID]), s->tstat[tellerID].queueCount);
+      printf("DEBUG: å‡ºçº³å‘˜ %d ç¦»å¼€æ—¶é—´ %d. é˜Ÿåˆ—æ˜¯å¦ä¸ºç©º: %d. (å½“å‰é˜Ÿåˆ—é•¿åº¦: %d)\n", tellerID, GetTime(e), IsTellerQueueEmpty(&s->tstat[tellerID]), s->tstat[tellerID].queueCount);
 
       // --- NEW LOGIC FOR VIP WAITING POLICY (Requirements 1 & 2) ---
       // Step 1: Recalculate waiting times for ALL VIPs in ALL queues and populate global vipPQueue
@@ -423,8 +407,8 @@ void RunSimulation(Simulation *s)
         originalTellerID_of_vip = GetTellerID(&nextCustomerToServe); // Retrieve original teller ID
         int vipCustomerID_to_remove = GetCustomerID(&nextCustomerToServe);
 
-        // Remove the VIP from their original teller's queue (Requirement 2: "¿ÉÒÔ¸ü»»¹ñÌ¨·þÎñ")
-        // 1. ¼ÆËãÔ­¶ÓÁÐÖÐÔÚVIPºóÃæµÄÆÕÍ¨¿Í»§¼õÉÙµÄµÈ´ýÊ±¼ä
+        // Remove the VIP from their original teller's queue (Requirement 2: "å¯ä»¥æ›´æ¢æŸœå°æœåŠ¡")
+        // 1. è®¡ç®—åŽŸé˜Ÿåˆ—ä¸­åœ¨VIPåŽé¢çš„æ™®é€šå®¢æˆ·å‡å°‘çš„ç­‰å¾…æ—¶é—´
         Node *orig = s->tstat[originalTellerID_of_vip].customerQueueHead;
         int found_vip = 0;
         int vip_service_time = 0;
@@ -437,13 +421,13 @@ void RunSimulation(Simulation *s)
           }
           else if (found_vip && GetCustomerType(&orig->customerEvent) == notVip)
           {
-            // ÕâÐ©ÆÕÍ¨¿Í»§±¾À´ÒªµÈVIPµÄ·þÎñÊ±¼ä£¬ÏÖÔÚ²»ÓÃµÈÁË
+            // è¿™äº›æ™®é€šå®¢æˆ·æœ¬æ¥è¦ç­‰VIPçš„æœåŠ¡æ—¶é—´ï¼ŒçŽ°åœ¨ä¸ç”¨ç­‰äº†
             s->totalCutInTime -= vip_service_time;
           }
           orig = orig->next;
         }
         RemoveCustomerByID(&s->tstat[originalTellerID_of_vip], vipCustomerID_to_remove);
-        // 2. ¼ÆËãÐÂ¶ÓÁÐ£¨µ±Ç°tellerID£©ËùÓÐÆÕÍ¨¿Í»§ÒòVIP²å¶ÓÔö¼ÓµÄµÈ´ýÊ±¼ä
+        // 2. è®¡ç®—æ–°é˜Ÿåˆ—ï¼ˆå½“å‰tellerIDï¼‰æ‰€æœ‰æ™®é€šå®¢æˆ·å› VIPæ’é˜Ÿå¢žåŠ çš„ç­‰å¾…æ—¶é—´
         Node *curr = s->tstat[tellerID].customerQueueHead;
         while (curr != NULL)
         {
@@ -453,7 +437,7 @@ void RunSimulation(Simulation *s)
           }
           curr = curr->next;
         }
-        printf("DEBUG: VIP¿Í»§ %d (À´×Ô³öÄÉÔ± %d µÄ¶ÓÁÐ) µÈ´ýÊ±¼ä %d ´ïµ½×î³¤µÈ´ýÊ±¼ä %d£¬ÓÅÏÈ·þÎñ¡£\n", vipCustomerID_to_remove, originalTellerID_of_vip, GetWaitTime(&nextCustomerToServe), s->waitHigh);
+        printf("DEBUG: VIPå®¢æˆ· %d (æ¥è‡ªå‡ºçº³å‘˜ %d çš„é˜Ÿåˆ—) ç­‰å¾…æ—¶é—´ %d è¾¾åˆ°æœ€é•¿ç­‰å¾…æ—¶é—´ %dï¼Œä¼˜å…ˆæœåŠ¡ã€‚\n", vipCustomerID_to_remove, originalTellerID_of_vip, GetWaitTime(&nextCustomerToServe), s->waitHigh);
 
         // Assign this VIP to be served by the current tellerID
         waittime = GetWaitTime(&nextCustomerToServe); // This is the total wait time for the VIP
@@ -477,12 +461,12 @@ void RunSimulation(Simulation *s)
           s->tstat[tellerID].timeline[s->tstat[tellerID].timelineCount] = *newevent;
           s->tstat[tellerID].timelineCount++;
         }
-        printf("\t³öÄÉÔ± %d ¿ªÊ¼·þÎñÅÅ¶ÓµÄ %s¿Í»§ %d\n", tellerID, (GetCustomerType(&nextCustomerToServe) == Vip) ? "VIP" : "ÆÕÍ¨", GetCustomerID(&nextCustomerToServe));
+        printf("\tå‡ºçº³å‘˜ %d å¼€å§‹æœåŠ¡æŽ’é˜Ÿçš„ %så®¢æˆ· %d\n", tellerID, (GetCustomerType(&nextCustomerToServe) == Vip) ? "VIP" : "æ™®é€š", GetCustomerID(&nextCustomerToServe));
       }
       else if (!IsTellerQueueEmpty(&s->tstat[tellerID]))
       {
         // No high-priority VIPs globally, serve from this teller's own queue (original logic)
-        printf("DEBUG: ³öÄÉÔ± %d ¶ÓÁÐ²»Îª¿Õ¡£´¦ÀíÏÂÒ»¸ö¿Í»§¡£\n", tellerID);
+        printf("DEBUG: å‡ºçº³å‘˜ %d é˜Ÿåˆ—ä¸ä¸ºç©ºã€‚å¤„ç†ä¸‹ä¸€ä¸ªå®¢æˆ·ã€‚\n", tellerID);
         Event nextCustomerInLine = DequeueCustomer(&s->tstat[tellerID]); // This is the original logic
         int serviceTimeForNext = Get_ServiceTime(s);
 
@@ -514,11 +498,11 @@ void RunSimulation(Simulation *s)
           s->tstat[tellerID].timeline[s->tstat[tellerID].timelineCount] = *newevent;
           s->tstat[tellerID].timelineCount++;
         }
-        printf("\t³öÄÉÔ± %d ¿ªÊ¼·þÎñÅÅ¶ÓµÄ %s¿Í»§ %d\n", tellerID, (GetCustomerType(&nextCustomerInLine) == Vip) ? "VIP" : "ÆÕÍ¨", GetCustomerID(&nextCustomerInLine));
+        printf("\tå‡ºçº³å‘˜ %d å¼€å§‹æœåŠ¡æŽ’é˜Ÿçš„ %så®¢æˆ· %d\n", tellerID, (GetCustomerType(&nextCustomerInLine) == Vip) ? "VIP" : "æ™®é€š", GetCustomerID(&nextCustomerInLine));
       }
       else
       {
-        printf("DEBUG: ³öÄÉÔ± %d ¶ÓÁÐÎª¿Õ¡£³öÄÉÔ±±äÎª¿ÕÏÐ¡£\n", tellerID);
+        printf("DEBUG: å‡ºçº³å‘˜ %d é˜Ÿåˆ—ä¸ºç©ºã€‚å‡ºçº³å‘˜å˜ä¸ºç©ºé—²ã€‚\n", tellerID);
         s->tstat[tellerID].finishService = GetTime(e);
       }
     }
@@ -556,25 +540,25 @@ void PrintSimulationResults(Simulation *s)
   }
 
   printf("\n");
-  printf("******** Ä£Äâ½á¹û×Ü½á ********\n");
-  printf("Ä£ÄâÊ±¼ä£º%d ·ÖÖÓ\n", s->simulationLength);
-  printf("\t¿Í»§×ÜÊý£º%d\n", cumCustomers);
-  printf("\tÆ½¾ù¿Í»§µÈ´ýÊ±¼ä£º");
+  printf("******** æ¨¡æ‹Ÿç»“æžœæ€»ç»“ ********\n");
+  printf("æ¨¡æ‹Ÿæ—¶é—´ï¼š%d åˆ†é’Ÿ\n", s->simulationLength);
+  printf("\tå®¢æˆ·æ€»æ•°ï¼š%d\n", cumCustomers);
+  printf("\tå¹³å‡å®¢æˆ·ç­‰å¾…æ—¶é—´ï¼š");
 
   // Calculate average customer wait time
   avgCustWait = (cumCustomers > 0) ? (int)((float)cumWait / cumCustomers + 0.5) : 0;
-  printf("%d ·ÖÖÓ\n", avgCustWait);
+  printf("%d åˆ†é’Ÿ\n", avgCustWait);
 
   // Print teller-specific statistics and timelines
   for (i = 1; i <= s->numTellers; i++)
   {
-    printf("\t³öÄÉÔ± #%d\t¹¤×÷°Ù·Ö±È ", i);
+    printf("\tå‡ºçº³å‘˜ #%d\tå·¥ä½œç™¾åˆ†æ¯” ", i);
     // Ensure simulationLength is positive to avoid division by zero
     tellerWork = (s->simulationLength > 0) ? (float)(s->tstat[i].totalService) / s->simulationLength : 0.0;
     tellerWorkPercent = (int)(tellerWork * 100.0 + 0.5);
     printf("%d%%\n", tellerWorkPercent);
 
-    printf("\t³öÄÉÔ± #%d Ê±¼äÏß£º\n", i);
+    printf("\tå‡ºçº³å‘˜ #%d æ—¶é—´çº¿ï¼š\n", i);
     // Iterate through the timeline of events for each teller
     for (j = 0; j < s->tstat[i].timelineCount; j++)
     {
@@ -585,15 +569,15 @@ void PrintSimulationResults(Simulation *s)
       {
         s->totalVipWaitTime += waitTime; // Accumulate total VIP wait time
       }
-      printf("\t\tÊ±¼ä %2d£º%s¿Í»§ %d£¬·þÎñÊ±¼ä %d£¬µÈ´ýÊ±¼ä %d\n",
-             GetTime(te), (iv == Vip) ? "VIP" : "ÆÕÍ¨",
+      printf("\t\tæ—¶é—´ %2dï¼š%så®¢æˆ· %dï¼ŒæœåŠ¡æ—¶é—´ %dï¼Œç­‰å¾…æ—¶é—´ %d\n",
+             GetTime(te), (iv == Vip) ? "VIP" : "æ™®é€š",
              GetCustomerID(te), GetServiceTime(te), waitTime);
     }
   }
   printf("\n");
-  printf("VIP¿Í»§Æ½¾ùµÈ´ýÊ±¼ä£º%f ·ÖÖÓ\n", (float)s->totalVipWaitTime / s->totalVipCustomerCount);
-  printf("³öÄÉÔ±Æ½¾ù¿ÕÏÐÊ±¼ä£º%f ·ÖÖÓ\n", (float)s->totalTellerIdleTime / s->numTellers);
-  printf("ÆÕÍ¨ÓÃ»§±»²å¶ÓËùÆ½¾ù¶à³öµÄµÈ´ýÊ±¼ä£º%f ·ÖÖÓ\n", (float)s->totalCutInTime / s->totalOrdinaryCustomerCount);
+  printf("VIPå®¢æˆ·å¹³å‡ç­‰å¾…æ—¶é—´ï¼š%f åˆ†é’Ÿ\n", (float)s->totalVipWaitTime / s->totalVipCustomerCount);
+  printf("å‡ºçº³å‘˜å¹³å‡ç©ºé—²æ—¶é—´ï¼š%f åˆ†é’Ÿ\n", (float)s->totalTellerIdleTime / s->numTellers);
+  printf("æ™®é€šç”¨æˆ·è¢«æ’é˜Ÿæ‰€å¹³å‡å¤šå‡ºçš„ç­‰å¾…æ—¶é—´ï¼š%f åˆ†é’Ÿ\n", (float)s->totalCutInTime / s->totalOrdinaryCustomerCount);
 }
 
 // Helper functions for the new teller queue (linked list)
@@ -662,7 +646,7 @@ int IsTellerQueueEmpty(TellerStats *ts)
 }
 
 // New function: Inserts a VIP customer into the queue according to priority rules
-// VIP²å¶ÓÊ±Ö±½Ó²åµ½¶ÓÍ·£¬´Ó¶ø±ÜÃâÒÆ¶¯Ô­ÏÈµÄÒ»¸öµ½¶ÓÎ²¡£ÈôÔÙÓÐvip²å¶ÓÔò²åµ½Ç°Ò»¸övipÖ®ºó
+// VIPæ’é˜Ÿæ—¶ç›´æŽ¥æ’åˆ°é˜Ÿå¤´ï¼Œä»Žè€Œé¿å…ç§»åŠ¨åŽŸå…ˆçš„ä¸€ä¸ªåˆ°é˜Ÿå°¾ã€‚è‹¥å†æœ‰vipæ’é˜Ÿåˆ™æ’åˆ°å‰ä¸€ä¸ªvipä¹‹åŽ
 void InsertVipIntoQueue(TellerStats *ts, Event vipEvent)
 {
   Node *newNode = (Node *)malloc(sizeof(Node));
@@ -755,7 +739,7 @@ void RemoveCustomerByID(TellerStats *ts, int customerID)
   }
 }
 
-// ¸ù¾ÝcustomerID²éÕÒÆä·þÎñÊ±¼ä
+// æ ¹æ®customerIDæŸ¥æ‰¾å…¶æœåŠ¡æ—¶é—´
 int GetServiceTimeByCustomerID(TellerStats *ts, int customerID)
 {
   Node *curr = ts->customerQueueHead;
@@ -767,7 +751,7 @@ int GetServiceTimeByCustomerID(TellerStats *ts, int customerID)
     }
     curr = curr->next;
   }
-  return 0; // Î´ÕÒµ½£¬·µ»Ø0
+  return 0; // æœªæ‰¾åˆ°ï¼Œè¿”å›ž0
 }
 
 #endif /* SIMULATION */
