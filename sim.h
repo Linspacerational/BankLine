@@ -80,7 +80,7 @@ void RemoveCustomerByID(TellerStats *ts, int customerID); // NEW: For VIP changi
 // Generates a random VIP status (1 in 5 chance is VIP)
 isVip GenerateRandomVipStatus(void)
 {
-  return (rand() % 5 == 0) ? Vip : notVip;
+  return (rand() % 2 == 0) ? Vip : notVip;
 }
 
 // Initializes the simulation parameters and data structures
