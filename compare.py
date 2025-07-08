@@ -65,7 +65,7 @@ def read_scores(base_file_path):
 
 def plot_scores(all_scores):
     """
-    绘制得分对比图表。生成三个子图，每个子图对比一个维度在不同配置下的得分。
+    绘制得分对比图表。生成三个子图，每个子图是柱形图，对比一个维度在不同配置下的平均得分。
 
     Args:
         all_scores (dict): 包含不同模拟配置下得分的字典，
@@ -75,79 +75,74 @@ def plot_scores(all_scores):
         print("没有有效的得分数据可以绘制图表。")
         return
 
-    # 尝试从第一个可用的场景中提取出纳员数量列表，确保其已排序且一致
-    # 假设所有文件的出纳员数量范围和顺序都是一致的
-    teller_counts = []
-    for scenario_key in ['forbank', 'forvip', 'forcust']:
-        if scenario_key in all_scores and all_scores[scenario_key]:
-            teller_counts = sorted(list(set([data[0] for data in all_scores[scenario_key]])))
-            break
-    
-    if not teller_counts:
-        print("无法提取出纳员数量数据，无法绘图。")
-        return
-
-    # 定义绘图中每条线的标签，表示数据来源于哪种模拟配置
-    line_config_labels = {
-        'forbank': '在“利好银行”配置下模拟',
-        'forvip': '在“利好VIP客户”配置下模拟',
-        'forcust': '在“利好普通客户”配置下模拟'
-    }
-
     # 定义三个子图（三个维度）的信息
     # index: 对应得分在每行数据 [num_tellers, score_bank, score_vip, score_cust] 中的索引
     plot_dimensions = {
-        'bank_score': {'index': 1, 'title': '“利好银行”得分在不同模拟配置下的变化', 'ylabel': '利好银行得分 (%)'},
-        'vip_score':  {'index': 2, 'title': '“利好VIP客户”得分在不同模拟配置下的变化', 'ylabel': '利好VIP客户得分 (%)'},
-        'cust_score': {'index': 3, 'title': '“利好普通客户”得分在不同模拟配置下的变化', 'ylabel': '利好普通客户得分 (%)'}
+        'bank_score': {'index': 1, 'title': '“利好银行”得分平均值对比', 'ylabel': '平均得分 (%)'},
+        'vip_score':  {'index': 2, 'title': '“利好VIP客户”得分平均值对比', 'ylabel': '平均得分 (%)'},
+        'cust_score': {'index': 3, 'title': '“利好普通客户”得分平均值对比', 'ylabel': '平均得分 (%)'}
     }
 
+    # 定义柱形图的X轴标签（即三种模拟配置）
+    bar_labels = ['在“利好银行”配置下模拟', '在“利好VIP客户”配置下模拟', '在“利好普通客户”配置下模拟']
+    bar_scenario_keys = ['forbank', 'forvip', 'forcust'] # 对应all_scores中的键，决定柱子的顺序
+
     # 创建一个包含3个子图的图表
-    fig, axes = plt.subplots(1, 3, figsize=(24, 7), sharex=True, sharey=True) # sharex/sharey确保X/Y轴范围一致
-    fig.suptitle('不同出纳员数量下，各评估机制得分在不同模拟配置下的对比', fontsize=18, y=1.02) # 主标题
+    fig, axes = plt.subplots(1, 3, figsize=(24, 8), sharey=True) # sharey=True 确保Y轴范围一致
+    fig.suptitle('不同模拟配置下各评估机制的平均得分对比', fontsize=18, y=1.02) # 主标题
 
-    # 遍历每个子图维度并绘制
+    # 确保axes是一个可迭代的数组，即使只有一个子图
+    if len(axes.shape) == 1:
+        axes = axes.flatten()
+
+    bar_width = 0.25 # 每根柱子的宽度
+    # X轴上柱子的位置
+    index = np.arange(len(bar_labels))
+
+    # 遍历每个子图维度并绘制柱形图
     for i, (dim_key, dim_info) in enumerate(plot_dimensions.items()):
-        ax = axes[i] # 获取当前子图对象
-        score_idx = dim_info['index'] # 获取当前维度对应的得分索引
+        ax = axes[i]
+        score_idx = dim_info['index']
 
-        # 在当前子图中，为每种模拟配置绘制一条线
-        for config_key, scores_list in all_scores.items():
-            # 提取当前配置下，当前维度（例如“利好银行”）的得分
-            # 确保只包含浮点数或整数的有效数据，并与出纳员数量对齐
-            current_dim_scores = []
-            current_teller_counts_for_plot = []
-            
-            # 根据teller_counts的顺序收集数据
-            for tc in teller_counts:
-                found_data = False
-                for data_row in scores_list:
-                    if data_row[0] == tc:
-                        if isinstance(data_row[score_idx], (float, int)):
-                            current_dim_scores.append(data_row[score_idx])
-                            current_teller_counts_for_plot.append(tc)
-                        else:
-                            current_dim_scores.append(np.nan) # 插入NaN以创建断线
-                            current_teller_counts_for_plot.append(tc)
-                        found_data = True
-                        break
-                if not found_data:
-                    current_dim_scores.append(np.nan) # 如果缺少该出纳员数量的数据
-                    current_teller_counts_for_plot.append(tc)
-            
-            ax.plot(current_teller_counts_for_plot, current_dim_scores, 
-                    marker='o', linestyle='-', label=line_config_labels.get(config_key, config_key))
+        # 收集当前维度在三种模拟配置下的平均得分
+        average_scores_for_dim = []
+        for config_key in bar_scenario_keys:
+            if config_key in all_scores and all_scores[config_key]:
+                # 提取当前配置下，当前维度（例如“利好银行”）的所有得分
+                # 过滤掉任何非数字值（例如，如果数据中出现“无有效数据”）
+                valid_scores = [data[score_idx] for data in all_scores[config_key] 
+                                if isinstance(data[score_idx], (float, int))]
+                
+                if valid_scores:
+                    # 计算有效得分的平均值
+                    average_scores_for_dim.append(np.mean(valid_scores))
+                else:
+                    # 如果没有有效数据，将平均值设为0或NaN，此处设为0以便于绘图
+                    average_scores_for_dim.append(0) 
+            else:
+                # 如果某个模拟配置的数据完全缺失，平均值设为0
+                average_scores_for_dim.append(0) 
+
+        # 绘制柱形图
+        bars = ax.bar(index, average_scores_for_dim, bar_width, 
+                      color=['skyblue', 'lightcoral', 'lightgreen'])
         
-        ax.set_title(dim_info['title'], fontsize=14)
-        ax.set_xlabel('出纳员数量', fontsize=12)
-        ax.set_ylabel(dim_info['ylabel'], fontsize=12)
-        ax.set_xticks(teller_counts) # 确保X轴刻度与出纳员数量对应
-        ax.grid(True, linestyle='--', alpha=0.7) # 添加网格
-        ax.legend(title='模拟运行配置', fontsize=10, title_fontsize=12) # 显示图例
+        # 在每根柱子上方添加数值标签
+        for bar in bars:
+            yval = bar.get_height()
+            ax.text(bar.get_x() + bar.get_width()/2, yval, 
+                    f'{yval:.2f}', va='bottom', ha='center', fontsize=10) # 格式化为两位小数
 
-    plt.tight_layout(rect=[0, 0.03, 1, 0.95]) # 调整布局，为总标题和底部标签留出空间
+        ax.set_title(dim_info['title'], fontsize=14)
+        ax.set_ylabel(dim_info['ylabel'], fontsize=12)
+        ax.set_xticks(index)
+        # 旋转X轴标签以防重叠，并设置对齐方式
+        ax.set_xticklabels(bar_labels, rotation=45, ha='right', fontsize=10) 
+        ax.grid(axis='y', linestyle='--', alpha=0.7) # 只显示Y轴网格，更适合柱形图
+
+    plt.tight_layout(rect=[0, 0.1, 1, 0.95]) # 调整布局，为总标题和旋转的X轴标签留出空间
     plt.show()
-    plt.savefig('scores_comparison.png', dpi=300, bbox_inches='tight') # 保存图表为PNG文件
+    plt.savefig('average_scores_comparison_bar_chart.png', dpi=300, bbox_inches='tight') # 保存图表为PNG文件
 
 if __name__ == "__main__":
     # 指定存放数据的根目录
@@ -165,6 +160,6 @@ if __name__ == "__main__":
         expected_scenario_keys = ['forbank', 'forvip', 'forcust']
         if all(key in scores_data and scores_data[key] for key in expected_scenario_keys):
             plot_scores(scores_data)
-            print("可视化图表已生成。")
+            print("可视化柱形图已生成。并保存为 'average_scores_comparison_bar_chart.png'。")
         else:
             print("未能读取到所有必要的得分数据。请检查上述警告信息和文件内容。")
