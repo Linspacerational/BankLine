@@ -27,7 +27,7 @@ def run_simulation(sim_input):
         dict: A dictionary containing the captured metrics, or None if parsing fails.
     """
     try:
-        subprocess.run(['gcc', 'event.c', '-o', 'a.exe'], check=True) # 编译新的 a.exe 文件
+        #subprocess.run(['gcc', 'event.c', '-o', 'a.exe'], check=True) # 编译新的 a.exe 文件
         process = subprocess.run(
             ['./a.exe'],
             input=sim_input.encode('utf-8'), # input 仍然编码为 bytes

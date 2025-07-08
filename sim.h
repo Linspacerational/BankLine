@@ -647,6 +647,8 @@ int IsTellerQueueEmpty(TellerStats *ts)
 
 // New function: Inserts a VIP customer into the queue according to priority rules
 // VIP插队时直接插到队头，从而避免移动原先的一个到队尾。若再有vip插队则插到前一个vip之后
+// New function: Inserts a VIP customer into the queue according to priority rules
+// VIP插队时直接插到队头，从而避免移动原先的一个到队尾。若再有vip插队则插到前一个vip之后
 void InsertVipIntoQueue(TellerStats *ts, Event vipEvent)
 {
   Node *newNode = (Node *)malloc(sizeof(Node));
@@ -668,26 +670,52 @@ void InsertVipIntoQueue(TellerStats *ts, Event vipEvent)
   {
     Node *current = ts->customerQueueHead;
     Node *prev = NULL;
+    int position = 0; // Track the current position in the queue
 
-    // Find the last VIP in the queue, or the first non-VIP.
-    // New VIP should be inserted AFTER existing VIPs at the front.
-    while (current != NULL && GetCustomerType(&current->customerEvent) == Vip)
+    // Find the insertion point: after the second customer, or after the last VIP if fewer than 2 non-VIPs are at the front.
+    // VIPs can only cut in from the third position.
+    while (current != NULL && position < 2) // Iterate for the first two positions
     {
       prev = current;
       current = current->next;
+      position++;
     }
 
-    if (prev == NULL) // No existing VIPs at the front, insert at head (before first non-VIP or if queue was all non-VIPs)
+    // Now, 'current' is either NULL (queue has less than 2 elements) or points to the 3rd element.
+    // 'prev' points to the 2nd element, or NULL if queue had 0 or 1 element.
+
+    // If there are less than 2 customers, or the current position is after existing VIPs
+    if (position < 2)
     {
-      newNode->next = ts->customerQueueHead;
-      ts->customerQueueHead = newNode;
-    }
-    else // Insert after the last VIP (prev points to the last VIP found)
-    {
-      newNode->next = prev->next;
-      prev->next = newNode;
-      if (newNode->next == NULL) // If inserted at the very end
+      // If there are 0 or 1 elements, and we've reached here, it means we need to append.
+      // Or if the first two spots are empty, VIPs still go to the end of existing VIPs or just append.
+      // This handles cases like empty queue, single element queue.
+      if (ts->customerQueueTail == NULL)
+      { // Should be covered by IsTellerQueueEmpty, but for safety
+        ts->customerQueueHead = newNode;
+        ts->customerQueueTail = newNode;
+      }
+      else
       {
+        ts->customerQueueTail->next = newNode;
+        ts->customerQueueTail = newNode;
+      }
+    }
+    else // Position is 2 or more, we are past the first two customers
+    {
+      // Now, find the last VIP within the remaining part of the queue, starting from 'current'.
+      // This ensures new VIPs are inserted after existing VIPs *that are already past the 2nd position*.
+      Node *insertionPoint = prev; // Start looking for VIPs from the 2nd element (prev)
+
+      while (insertionPoint->next != NULL && GetCustomerType(&insertionPoint->next->customerEvent) == Vip)
+      {
+        insertionPoint = insertionPoint->next;
+      }
+
+      newNode->next = insertionPoint->next;
+      insertionPoint->next = newNode;
+      if (newNode->next == NULL)
+      { // If inserted at the very end
         ts->customerQueueTail = newNode;
       }
     }
