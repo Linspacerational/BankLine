@@ -184,12 +184,12 @@ for num_tellers in sorted(all_results.keys()): # 确保按出纳员数量排序
 
     # 检查所有分数是否有效（浮点数），避免“无有效数据”参与计算
     if isinstance(score_bank, float) and isinstance(score_vip, float) and isinstance(score_cust, float):
-        total_sum = score_bank + score_vip + score_cust
+        total_sum = score_bank/5 + score_vip + score_cust/5
         
         if total_sum > 0: # 避免除以零
-            pct_bank = (score_bank / total_sum) * 100
+            pct_bank = (score_bank/5 / total_sum) * 100
             pct_vip = (score_vip / total_sum) * 100
-            pct_cust = (score_cust / total_sum) * 100
+            pct_cust = (score_cust/5 / total_sum) * 100
             
             # 将结果添加到数组中
             normalized_scores_output.append([num_tellers, round(pct_bank, 2), round(pct_vip, 2), round(pct_cust, 2)])
@@ -210,4 +210,4 @@ writer.close()
 print("已将百分比结果写入 log/forbank/normalized_scores.txt")
 
 print("\n--- 评估完成 ---")
-subprocess.run(['rm', '-f', 'a.exe'], check=True) # 清理旧的 a.exe 文件
+subprocess.run(['rm', '.\\a.exe'], check=True) # 清理旧的 a.exe 文件
