@@ -324,12 +324,19 @@ void RunSimulation(Simulation *s)
         { // VIP assigned to a regular teller
           InsertVipIntoQueue(&s->tstat[tellerID], *e);
           Node *current = s->tstat[tellerID].customerQueueHead;
-          while (current != NULL)
-          {
-            if (GetCustomerType(&current->customerEvent) == notVip)
-              s->totalCutInTime += servicetime; // Increment cut-in time for non-VIPs
-            current = current->next;
+          if(current->next){
+            current = current->next; // Skip the first node
+            if(current->next){
+              current = current->next; // Skip the second node (the next customer)
+              while (current != NULL)
+              {
+                if (GetCustomerType(&current->customerEvent) == notVip)
+                  s->totalCutInTime += servicetime; // Increment cut-in time for non-VIPs
+                current = current->next;
+              }
+            }
           }
+          
           printf("\tVIP客户 %d 在出纳员 %d 排队 (插队). 队列头: %d, 队列尾: %d, 当前队列长度: %d\n",
                  GetCustomerID(e), tellerID,
                  (s->tstat[tellerID].customerQueueHead ? GetCustomerID(&s->tstat[tellerID].customerQueueHead->customerEvent) : 0),
