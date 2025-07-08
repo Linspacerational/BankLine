@@ -142,7 +142,6 @@ def plot_scores(all_scores):
 
     plt.tight_layout(rect=[0, 0.1, 1, 0.95]) # 调整布局，为总标题和旋转的X轴标签留出空间
     plt.show()
-    plt.savefig('average_scores_comparison_bar_chart.png', dpi=300, bbox_inches='tight') # 保存图表为PNG文件
 
 if __name__ == "__main__":
     # 指定存放数据的根目录
