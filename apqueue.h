@@ -107,7 +107,7 @@ void DeletePQueueByID(PQueue *pq, int customerID)
 {
     for (int i = 0; i < pq->count; i++)
     {
-        if (GetCustomerID(&pq->pqlist[i]) == customerID)
+        if (GetCustomerID(&pq->pqlist[i]) == customerID && pq->pqlist[i].etype == departure)
         {
             // Shift elements to the left to remove the element
             for (int j = i; j < pq->count - 1; j++)

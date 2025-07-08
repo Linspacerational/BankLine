@@ -315,7 +315,13 @@ void RunSimulation(Simulation *s)
             InsertVipIntoQueue(&s->tstat[tellerID], interruptedCustomerRequeuedEvent); // 插入队列头部
 
             // 3. 计算插队造成的额外等待时间
-            s->totalCutInTime += remainingServiceTime;
+            Node *current = s->tstat[tellerID].customerQueueHead;
+            while (current != NULL)
+            {
+              if (GetCustomerType(&current->customerEvent) == notVip)
+                s->totalCutInTime += currentCustomerServiceTime + timeServedSoFar; // Increment cut-in time for non-VIPs
+              current = current->next;
+            }
 
             // 4. 立即开始服务当前到达的 VIP 客户
             waittime = 0; // VIP 立即服务，等待时间为 0
@@ -338,8 +344,32 @@ void RunSimulation(Simulation *s)
           }
           else
           { // 出纳员忙碌，但不是在服务可中断的普通客户（例如，在服务另一个 VIP）
-            printf("DEBUG: VIP客户 %d 到达，出纳员 %d 忙碌但无法中断普通客户或服务中为其他 VIP。正常入队。\n", GetCustomerID(e), tellerID);
-            EnqueueCustomer(&s->tstat[tellerID], *e); // VIP 正常排队
+            if (tellerID > VIP_WINDOWS)
+            { // VIP assigned to a regular teller
+              InsertVipIntoQueue(&s->tstat[tellerID], *e);
+              Node *current = s->tstat[tellerID].customerQueueHead;
+              while (current != NULL)
+              {
+                if (GetCustomerType(&current->customerEvent) == notVip)
+                  s->totalCutInTime += currentCustomerServiceTime; // Increment cut-in time for non-VIPs
+                current = current->next;
+              }
+              printf("\tVIP客户 %d 在出纳员 %d 排队 (插队). 队列头: %d, 队列尾: %d, 当前队列长度: %d\n",
+                     GetCustomerID(e), tellerID,
+                     (s->tstat[tellerID].customerQueueHead ? GetCustomerID(&s->tstat[tellerID].customerQueueHead->customerEvent) : 0),
+                     (s->tstat[tellerID].customerQueueTail ? GetCustomerID(&s->tstat[tellerID].customerQueueTail->customerEvent) : 0),
+                     s->tstat[tellerID].queueCount);
+            }
+            else
+            {
+              // Normal enqueue (for non-VIPs, or VIPs going to VIP teller)
+              EnqueueCustomer(&s->tstat[tellerID], *e);
+              printf("\t客户 %d 在出纳员 %d 排队 (正常入队). 队列头: %d, 队列尾: %d, 当前队列长度: %d\n",
+                     GetCustomerID(e), tellerID,
+                     (s->tstat[tellerID].customerQueueHead ? GetCustomerID(&s->tstat[tellerID].customerQueueHead->customerEvent) : 0),
+                     (s->tstat[tellerID].customerQueueTail ? GetCustomerID(&s->tstat[tellerID].customerQueueTail->customerEvent) : 0),
+                     s->tstat[tellerID].queueCount);
+            }
           }
         }
         else if (s->tstat[tellerID].finishService <= GetTime(e) && IsTellerQueueEmpty(&s->tstat[tellerID]))
@@ -363,16 +393,6 @@ void RunSimulation(Simulation *s)
             s->tstat[tellerID].timelineCount++;
           }
           printf("\t出纳员 %d\t等待时间 %d\t服务时间 %d (立即服务)\n", tellerID, waittime, currentCustomerServiceTime);
-        }
-        else // 出纳员忙碌，有队列，且 VIP 无法中断（例如，队列中有其他 VIP）
-        {
-          // VIP 客户正常排队
-          EnqueueCustomer(&s->tstat[tellerID], *e);
-          printf("\t客户 %d (VIP: %d) 在出纳员 %d 排队 (正常入队). 队列头: %d, 队列尾: %d, 当前队列长度: %d\n",
-                 GetCustomerID(e), iv, tellerID,
-                 (s->tstat[tellerID].customerQueueHead ? GetCustomerID(&s->tstat[tellerID].customerQueueHead->customerEvent) : 0),
-                 (s->tstat[tellerID].customerQueueTail ? GetCustomerID(&s->tstat[tellerID].customerQueueTail->customerEvent) : 0),
-                 s->tstat[tellerID].queueCount);
         }
       }
       else // 普通客户到达
@@ -533,8 +553,36 @@ void RunSimulation(Simulation *s)
                       GetWaitTime(interruptedCustomerEvent), // 仅携带原始等待时间
                       originalInterruptedServiceTime, notVip);
             InsertVipIntoQueue(&s->tstat[targetTellerForVip], interruptedCustomerRequeuedEvent);
-
-            s->totalCutInTime += remainingServiceTime;
+            DeletePQueueByID(&s->pq, interruptedCustomerID); // 从主队列中删除被打断的客户
+                                                             // 1. 计算原队列中在VIP后面的普通客户减少的等待时间
+            Node *orig = s->tstat[originalTeller].customerQueueHead;
+            int found_vip = 0;
+            int vip_service_time = 0;
+            while (orig != NULL)
+            {
+              if (!found_vip && GetCustomerID(&orig->customerEvent) == vipCustomerID)
+              {
+                found_vip = 1;
+                vip_service_time = GetServiceTimeByCustomerID(&s->tstat[originalTeller], vipCustomerID);
+              }
+              else if (found_vip && GetCustomerType(&orig->customerEvent) == notVip)
+              {
+                // 这些普通客户本来要等VIP的服务时间，现在不用等了
+                s->totalCutInTime -= vip_service_time;
+              }
+              orig = orig->next;
+            }
+            RemoveCustomerByID(&s->tstat[originalTeller], vipCustomerID);
+            // 2. 计算新队列（当前tellerID）所有普通客户因VIP插队增加的等待时间
+            Node *curr = s->tstat[tellerID].customerQueueHead;
+            while (curr != NULL)
+            {
+              if (GetCustomerType(&curr->customerEvent) == notVip)
+              {
+                s->totalCutInTime += vip_service_time;
+              }
+              curr = curr->next;
+            }
           }
 
           // 服务优先的 VIP
@@ -766,9 +814,31 @@ void InsertVipIntoQueue(TellerStats *ts, Event customerEvent)
   }
   else
   {
-    // 插入队列头部
-    newNode->next = ts->customerQueueHead;
-    ts->customerQueueHead = newNode;
+    Node *current = ts->customerQueueHead;
+    Node *prev = NULL;
+
+    // Find the last VIP in the queue, or the first non-VIP.
+    // New VIP should be inserted AFTER existing VIPs at the front.
+    while (current != NULL && GetCustomerType(&current->customerEvent) == Vip)
+    {
+      prev = current;
+      current = current->next;
+    }
+
+    if (prev == NULL) // No existing VIPs at the front, insert at head (before first non-VIP or if queue was all non-VIPs)
+    {
+      newNode->next = ts->customerQueueHead;
+      ts->customerQueueHead = newNode;
+    }
+    else // Insert after the last VIP (prev points to the last VIP found)
+    {
+      newNode->next = prev->next;
+      prev->next = newNode;
+      if (newNode->next == NULL) // If inserted at the very end
+      {
+        ts->customerQueueTail = newNode;
+      }
+    }
   }
   ts->queueCount++;
 }
