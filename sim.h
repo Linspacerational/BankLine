@@ -37,7 +37,6 @@ struct simulation
   int nextCustomer;
   int arrivalLow, arrivalHigh;
   int serviceLow, serviceHigh;
-  int waitHigh;
   TellerStats tstat[11];
   PQueue pq;
   isVip ivs[10]; // Predefined VIP statuses (can be removed if VIP status is no longer relevant for logic)
@@ -86,7 +85,7 @@ void InitSimulation(Simulation *s)
   s->ivsIndex = 0;     // Index for predefined VIP statuses
 
   // Predefined VIP statuses for initial customers - Can be removed if VIP status is no longer relevant
-  isVip temp[10] = {Vip, notVip, Vip, Vip, Vip, notVip, Vip, notVip, notVip, Vip}; // Updated VIP sequence
+  isVip temp[10] = {notVip, notVip, Vip, Vip, Vip, notVip, Vip, notVip, notVip, Vip}; // Updated VIP sequence
   for (i = 0; i < 10; i++)
   {
     s->ivs[i] = temp[i];
@@ -101,8 +100,6 @@ void InitSimulation(Simulation *s)
   scanf("%d%d", &s->arrivalLow, &s->arrivalHigh);
   printf("输入服务时间范围（分钟）：");
   scanf("%d%d", &s->serviceLow, &s->serviceHigh);
-  printf("Enter the longest waitting time the customer can tolerate in minutes: ");
-  scanf("%d", &s->waitHigh);
 
   // Initialize and insert the first arrival event into the priority queue
   InitEvent(firstevent, 0, arrival, 1, 0, 0, 0, s->ivs[s->ivsIndex++]); // Keep VIP status for event, but it's ignored in queuing
