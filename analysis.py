@@ -184,7 +184,7 @@ for num_tellers in sorted(all_results.keys()): # 确保按出纳员数量排序
 
     # 检查所有分数是否有效（浮点数），避免“无有效数据”参与计算
     if isinstance(score_bank, float) and isinstance(score_vip, float) and isinstance(score_cust, float):
-        total_sum = score_bank/5 + score_vip + score_cust/5
+        total_sum = score_bank/4.8 + score_vip + score_cust/4.8
         
         if total_sum > 0: # 避免除以零
             pct_bank = (score_bank/5 / total_sum) * 100
