@@ -5,7 +5,7 @@
 #include <stdlib.h>
 
 /* maximum size of the priority queue array*/
-#define MaxPQSize 50
+#define MaxPQSize 1000
 
 struct pQueue
 {
